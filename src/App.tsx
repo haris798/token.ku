@@ -72,6 +72,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'prediction' | 'history' | 'settings'>('dashboard');
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
   // Supabase Custom Login Form States
@@ -218,6 +219,79 @@ export default function App() {
       showBanner('error', 'Gagal memuat konfigurasi atau data.');
     } finally {
       setDataLoading(false);
+    }
+  };
+
+  const handleRefreshDashboard = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await syncLocalStorageWithRoomDb();
+      let loadedSettings = loadLocalSettings();
+
+      // Load remote settings from Supabase if configured
+      if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
+        try {
+          const remoteSettings = await loadSupabaseSettings(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
+          if (remoteSettings) {
+            loadedSettings = {
+              ...loadedSettings,
+              telegramToken: remoteSettings.telegramToken ?? loadedSettings.telegramToken,
+              telegramChatId: remoteSettings.telegramChatId ?? loadedSettings.telegramChatId,
+              lowThreshold: remoteSettings.lowThreshold !== undefined ? remoteSettings.lowThreshold : loadedSettings.lowThreshold,
+              telegramEnabled: remoteSettings.telegramEnabled !== undefined ? remoteSettings.telegramEnabled : loadedSettings.telegramEnabled,
+              theme: remoteSettings.theme ?? loadedSettings.theme,
+              supabaseUrl: remoteSettings.supabaseUrl || loadedSettings.supabaseUrl,
+              supabaseAnonKey: remoteSettings.supabaseAnonKey || loadedSettings.supabaseAnonKey
+            };
+            saveLocalSettings(loadedSettings);
+            setSettings(loadedSettings);
+          }
+        } catch (settingsErr) {
+          console.warn('Failed to fetch remote settings during manual refresh:', settingsErr);
+        }
+      }
+
+      let localMutations = loadLocalMutations();
+      
+      // Auto-clean any local duplicates
+      const uniqueLocal = deduplicateMutations(localMutations);
+      if (uniqueLocal.length !== localMutations.length) {
+        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
+        localMutations = uniqueLocal;
+      }
+
+      if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
+        // Auto-clean any duplicates inside Supabase database
+        try {
+          await cleanSupabaseDuplicates(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
+        } catch (cleanErr) {
+          console.warn('Failed to clean Supabase duplicates on manual refresh:', cleanErr);
+        }
+
+        // Push offline mutations to Supabase
+        if (localMutations.length > 0) {
+          try {
+            await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations);
+          } catch (syncErr) {
+            console.warn('Failed to auto-push local mutations on manual refresh:', syncErr);
+          }
+        }
+
+        // Pull latest from Supabase
+        const loadedMutations = await loadSupabaseMutations(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
+        localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
+        setMutations(loadedMutations);
+        showBanner('success', 'Data berhasil diperbarui dari Supabase!');
+      } else {
+        setMutations(localMutations);
+        showBanner('success', 'Data offline lokal berhasil diperbarui!');
+      }
+    } catch (err: any) {
+      console.error('Error refreshing data:', err);
+      showBanner('error', 'Gagal memperbarui data: ' + (err.message || err));
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -980,6 +1054,8 @@ export default function App() {
                   lowThreshold={settings?.lowThreshold || 15.0} 
                   kwhTariff={settings?.kwhTariff || 1444.7} 
                   activeTab="dashboard"
+                  onRefresh={handleRefreshDashboard}
+                  isRefreshing={isRefreshing}
                 />
               )}
 
@@ -989,6 +1065,8 @@ export default function App() {
                   lowThreshold={settings?.lowThreshold || 15.0} 
                   kwhTariff={settings?.kwhTariff || 1444.7} 
                   activeTab="prediction"
+                  onRefresh={handleRefreshDashboard}
+                  isRefreshing={isRefreshing}
                 />
               )}
 
