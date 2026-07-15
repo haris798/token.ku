@@ -1,0 +1,6 @@
+{
+  "name": "TokenPro",
+  "description": "Aplikasi pencatat mutasi saldo kWh meter listrik secara otomatis dengan dashboard grafik dan alert Telegram.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
