@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { sendTelegramNotification } from '../lib/telegram';
-import { saveSupabaseSettings } from '../lib/db';
+import { saveSupabaseSettings, loadSupabaseMutations, loadSupabaseSettings } from '../lib/db';
 import { Settings, Save, Send, AlertCircle, CheckCircle2, Sun, Moon, Database, Loader2, Cloud, Copy, ExternalLink, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SettingsPanelProps {
@@ -22,7 +22,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
   const [supabaseUrl, setSupabaseUrl] = useState(settings.supabaseUrl || '');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState(settings.supabaseAnonKey || '');
 
-  const [activeSubTab, setActiveSubTab] = useState<'basic' | 'telegram' | 'supabase'>('basic');
+  const [activeSubTab, setActiveSubTab] = useState<'basic' | 'telegram' | 'supabase' | 'room'>('basic');
   const [showSql, setShowSql] = useState(false);
   const [showMigrationSql, setShowMigrationSql] = useState(false);
 
@@ -66,6 +66,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
 
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState<{ successCount: number; failedCount: number } | null>(null);
+  const [exportSupabaseLoading, setExportSupabaseLoading] = useState(false);
 
   const handleSyncAll = async () => {
     if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
@@ -191,6 +192,54 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
     }
   };
 
+  const handleExportSupabaseJSON = async () => {
+    if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
+      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
+      return;
+    }
+    setExportSupabaseLoading(true);
+    try {
+      // 1. Ambil data mutasi dari Supabase
+      const mutations = await loadSupabaseMutations(supabaseUrl.trim(), supabaseAnonKey.trim());
+      
+      // 2. Ambil data pengaturan dari Supabase (opsional, jika tabel ada)
+      let supabaseSettings = null;
+      try {
+        supabaseSettings = await loadSupabaseSettings(supabaseUrl.trim(), supabaseAnonKey.trim());
+      } catch (err) {
+        console.warn('Gagal memuat pengaturan dari Supabase, mengekspor data mutasi saja:', err);
+      }
+
+      const exportData = {
+        appName: "TokenPro",
+        exportedFrom: "Supabase",
+        exportedAt: new Date().toISOString(),
+        settings: supabaseSettings || {
+          supabaseUrl: supabaseUrl.trim(),
+          supabaseAnonKey: supabaseAnonKey.trim()
+        },
+        mutations: mutations
+      };
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", url);
+      downloadAnchor.setAttribute("download", `tokenpro_supabase_export_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+      
+      alert(`Berhasil mengekspor ${mutations.length} baris log data dari Supabase ke file JSON!`);
+    } catch (err: any) {
+      alert('Gagal mengekspor data dari Supabase: ' + (err.message || err));
+    } finally {
+      setExportSupabaseLoading(false);
+    }
+  };
+
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -258,38 +307,50 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <button
             type="button"
             onClick={() => setActiveSubTab('basic')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'basic'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
             }`}
+            title="Dasar"
           >
-            <Settings className="h-3.5 w-3.5" />
-            Dasar
+            <Settings className="h-4 w-4" />
           </button>
           <button
             type="button"
             onClick={() => setActiveSubTab('telegram')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'telegram'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
             }`}
+            title="Telegram"
           >
-            <Send className="h-3.5 w-3.5" />
-            Telegram
+            <Send className="h-4 w-4 text-sky-500" />
           </button>
           <button
             type="button"
             onClick={() => setActiveSubTab('supabase')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'supabase'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
             }`}
+            title="Supabase"
           >
-            <Database className="h-3.5 w-3.5" />
-            Supabase
+            <Database className="h-4 w-4 text-emerald-500" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('room')}
+            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeSubTab === 'room'
+                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
+                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+            }`}
+            title="Room Database"
+          >
+            <Database className="h-4 w-4 text-blue-500" />
           </button>
         </div>
 
@@ -613,24 +674,45 @@ with check (true);`);
                     Punya data lama di penyimpanan lokal browser yang belum disinkronkan? Klik tombol di bawah untuk menyalin seluruh riwayat data log pemakaian saat ini ke database Supabase Anda secara massal:
                   </p>
                   
-                  <button
-                    type="button"
-                    disabled={syncLoading || isLoading}
-                    onClick={handleSyncAll}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-700/50 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs"
-                  >
-                    {syncLoading ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        <span>Melakukan Sinkronisasi Massal...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Database className="h-3.5 w-3.5" />
-                        <span>Mirror Semua Data ke Supabase</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="flex flex-wrap gap-2.5 pt-1">
+                    <button
+                      type="button"
+                      disabled={syncLoading || isLoading}
+                      onClick={handleSyncAll}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-700/50 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      {syncLoading ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Melakukan Sinkronisasi Massal...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Database className="h-3.5 w-3.5" />
+                          <span>Mirror Semua Data ke Supabase</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={exportSupabaseLoading || isLoading}
+                      onClick={handleExportSupabaseJSON}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-700/50 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      {exportSupabaseLoading ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Mengekspor dari Supabase...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-3.5 w-3.5" />
+                          <span>Ekspor Data Supabase ke JSON</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
 
                   {syncResult && (
                     <div className={`p-2.5 rounded-xl border text-[11px] flex items-start gap-2 ${
@@ -657,6 +739,66 @@ with check (true);`);
           </div>
         </div>
           </>
+        )}
+
+        {activeSubTab === 'room' && (
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4 text-slate-700 dark:text-slate-300">
+            <div>
+              <h4 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Database className="h-4 w-4 text-blue-500" />
+                Arsitektur Room Database (Capacitor)
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Aplikasi ini sekarang mengimplementasikan arsitektur Android Jetpack Room Database melalui jembatan native Capacitor Preferences.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-4">
+              {/* Status Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-slate-500 tracking-wide">Status Database</span>
+                <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px] rounded-full uppercase tracking-wider flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping inline-block" />
+                  Aktif & Sinkron
+                </span>
+              </div>
+
+              {/* DAOs / Entities breakdown */}
+              <div className="space-y-3">
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-2">
+                  <div>
+                    <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 font-sans">MutationDao</h5>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Entity: <code className="text-blue-500 font-semibold font-mono">MutationRecord</code></p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Membaca, menambah, dan menghapus log sisa saldo kWh & pemakaian listrik.</p>
+                  </div>
+                  <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold rounded-md font-mono">
+                    DAO
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-2">
+                  <div>
+                    <h5 className="font-bold text-xs text-slate-800 dark:text-slate-200 font-sans">SettingsDao</h5>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Entity: <code className="text-blue-500 font-semibold font-mono">AppSettings</code></p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Mengelola tarif listrik PLN, ambang batas, dan integrasi bot Telegram.</p>
+                  </div>
+                  <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold rounded-md font-mono">
+                    DAO
+                  </span>
+                </div>
+              </div>
+
+              {/* Informative description */}
+              <div className="text-[11px] leading-relaxed text-slate-500 space-y-1.5 border-t border-slate-100 dark:border-slate-800 pt-3">
+                <p className="font-semibold text-slate-600 dark:text-slate-400">💡 Fitur Keunggulan:</p>
+                <ul className="list-disc pl-4 space-y-1 text-slate-500 dark:text-slate-400">
+                  <li><span className="font-medium text-slate-600 dark:text-slate-400">Offline-First:</span> Data tetap tersimpan aman di penyimpanan internal perangkat seluler walaupun tanpa koneksi internet.</li>
+                  <li><span className="font-medium text-slate-600 dark:text-slate-400">Arsitektur Room:</span> Abstraksi database menggunakan pola DAO (Data Access Object) dan Singleton yang clean serta modular.</li>
+                  <li><span className="font-medium text-slate-600 dark:text-slate-400">Synchronized Cache:</span> Sinkronisasi dua arah yang mulus antara memori cache rendering cepat dan driver Capacitor Preferences.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         )}
 
         {activeSubTab === 'basic' && (

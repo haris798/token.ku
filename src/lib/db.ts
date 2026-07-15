@@ -1,4 +1,5 @@
 import { MutationRecord, AppSettings } from '../types';
+import { getRoomDatabase } from './roomDb';
 
 export const SAMPLE_LOGS: MutationRecord[] = [
   { id: "sample-1", timestamp: "2026-06-06T00:00:00Z", remainingKwh: 194.93, mutation: 0, type: "initial", notes: "Saldo Awal" },
@@ -73,6 +74,12 @@ export function saveLocalSettings(settings: AppSettings): void {
   } catch (e) {
     console.warn('localStorage write failed, stored in memory only:', e);
   }
+
+  // Simpan secara asinkron ke Room Database
+  const roomDb = getRoomDatabase();
+  roomDb.settingsDao().updateSettings(settings).catch(err => {
+    console.error('Failed to write settings to Room Database:', err);
+  });
 }
 
 // --- Local Mutations Operations (Fallback/Offline) ---
@@ -110,6 +117,7 @@ export function loadLocalMutations(): MutationRecord[] {
             };
           }
           return item;
+          // Kembalikan item
         });
 
         const unique = deduplicateMutations(healed);
@@ -155,6 +163,13 @@ export function saveLocalMutation(record: Omit<MutationRecord, 'id'>): MutationR
   };
   list.push(newRecord);
   localStorage.setItem('tokenpro_mutations', JSON.stringify(list));
+
+  // Simpan secara asinkron ke Room Database
+  const roomDb = getRoomDatabase();
+  roomDb.mutationDao().insert(newRecord).catch(err => {
+    console.error('Failed to write mutation to Room Database:', err);
+  });
+
   return list;
 }
 
@@ -162,13 +177,57 @@ export function deleteLocalMutation(id: string): MutationRecord[] {
   const list = loadLocalMutations();
   const filtered = list.filter(m => m.id !== id);
   localStorage.setItem('tokenpro_mutations', JSON.stringify(filtered));
+
+  // Hapus secara asinkron dari Room Database
+  const roomDb = getRoomDatabase();
+  roomDb.mutationDao().delete(id).catch(err => {
+    console.error('Failed to delete mutation from Room Database:', err);
+  });
+
   return filtered;
 }
 
 export function seedLocalData(): { settings: AppSettings; mutations: MutationRecord[] } {
   localStorage.setItem('tokenpro_settings', JSON.stringify(DEFAULT_SETTINGS));
   localStorage.setItem('tokenpro_mutations', JSON.stringify(SAMPLE_LOGS));
+
+  // Seeding Room Database secara asinkron
+  const roomDb = getRoomDatabase();
+  roomDb.settingsDao().updateSettings(DEFAULT_SETTINGS).catch(err => console.error('Room seed settings error:', err));
+  roomDb.mutationDao().deleteAll()
+    .then(() => roomDb.mutationDao().insertAll(SAMPLE_LOGS))
+    .catch(err => console.error('Room seed mutations error:', err));
+
   return { settings: DEFAULT_SETTINGS, mutations: SAMPLE_LOGS };
+}
+
+/**
+ * Sinkronisasi data antara LocalStorage (cache render cepat) dan Room Database (Driver Capacitor)
+ */
+export async function syncLocalStorageWithRoomDb(): Promise<void> {
+  try {
+    const roomDb = getRoomDatabase();
+    
+    // 1. Sinkronisasi Pengaturan
+    const roomSettings = await roomDb.settingsDao().getSettings();
+    const currentSettings = loadLocalSettings();
+    if (roomSettings) {
+      localStorage.setItem('tokenpro_settings', JSON.stringify(roomSettings));
+    } else {
+      await roomDb.settingsDao().updateSettings(currentSettings);
+    }
+
+    // 2. Sinkronisasi Mutasi
+    const roomMutations = await roomDb.mutationDao().getAll();
+    const localMutations = loadLocalMutations();
+    if (roomMutations.length > 0) {
+      localStorage.setItem('tokenpro_mutations', JSON.stringify(roomMutations));
+    } else if (localMutations.length > 0) {
+      await roomDb.mutationDao().insertAll(localMutations);
+    }
+  } catch (err) {
+    console.error('Failed to sync localStorage with Room Database:', err);
+  }
 }
 
 // --- Supabase Database Operations (Direct Rest API) ---

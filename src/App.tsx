@@ -23,7 +23,8 @@ import {
   deduplicateMutations,
   cleanSupabaseDuplicates,
   loadSupabaseSettings,
-  saveSupabaseSettings
+  saveSupabaseSettings,
+  syncLocalStorageWithRoomDb
 } from './lib/db';
 import { sendTelegramNotification } from './lib/telegram';
 import { MutationRecord, AppSettings } from './types';
@@ -145,6 +146,8 @@ export default function App() {
   const loadAppConfigAndData = async () => {
     setDataLoading(true);
     try {
+      // Sync Room Database with local storage before reading
+      await syncLocalStorageWithRoomDb();
       let loadedSettings = loadLocalSettings();
 
       // Load remote settings from Supabase if configured
