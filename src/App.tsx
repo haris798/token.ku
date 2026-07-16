@@ -28,7 +28,6 @@ import {
 } from './lib/db';
 import { sendTelegramNotification } from './lib/telegram';
 import { MutationRecord, AppSettings } from './types';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
 
 // Icons
 import {
@@ -60,6 +59,28 @@ import ManualInput from './components/ManualInput';
 import HistoryTable from './components/HistoryTable';
 import SettingsPanel from './components/SettingsPanel';
 
+// ✅ INLINE HOOK: Deteksi koneksi internet (menghindari error file tidak ditemukan)
+function useOnlineStatus() {
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+}
+
 export default function App() {
   const [user, setUser] = useState<SupabaseUserMapped | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -88,23 +109,17 @@ export default function App() {
     return s.supabaseAnonKey || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
   });
 
-  // ✅ BARU: Deteksi koneksi internet
-  const isOnline = useOnlineStatus();
-  
-  // ✅ BARU: Guard untuk cegah race condition
-  const isLoadingDataRef = useRef(false);
-  
-  // ✅ BARU: Track banner timeout untuk cleanup
-  const bannerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // ✅ BARU: Track koneksi sebelumnya untuk auto-sync
-  const prevOnlineRef = useRef(isOnline);
-
   const isCloudflareProxy = useMemo(() => {
     return window.location.hostname === 'token.haris443.workers.dev' || window.location.hostname.includes('workers.dev');
   }, []);
 
-  // ✅ FIX: showBanner dengan cleanup timeout
+  // ✅ BARU: State & Refs untuk Offline-First & Race Condition Guard
+  const isOnline = useOnlineStatus();
+  const isLoadingDataRef = useRef(false);
+  const bannerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevOnlineRef = useRef(isOnline);
+
+  // ✅ FIX: showBanner dengan cleanup timeout (cegah memory leak)
   const showBanner = (type: 'success' | 'error' | 'warning', message: string) => {
     setBanner({ type, message });
     
@@ -118,7 +133,7 @@ export default function App() {
     }, 6000);
   };
 
-  // ✅ Cleanup banner timeout saat unmount
+  // Cleanup banner timeout saat unmount
   useEffect(() => {
     return () => {
       if (bannerTimeoutRef.current) {
@@ -160,7 +175,7 @@ export default function App() {
     };
   }, []);
 
-  // ✅ Auto-sync saat koneksi kembali
+  // ✅ Auto-sync saat koneksi kembali online
   useEffect(() => {
     const wasOffline = prevOnlineRef.current === false;
     const isNowOnline = isOnline === true;
@@ -184,7 +199,7 @@ export default function App() {
 
   // ✅ REFACTOR: Offline-first + Race condition guard
   const loadAppConfigAndData = async () => {
-    // GUARD: Cegah race condition
+    // GUARD: Cegah race condition (double load)
     if (isLoadingDataRef.current) {
       console.log('[loadAppConfigAndData] Skipped: already loading');
       return;
@@ -216,7 +231,7 @@ export default function App() {
         if (!hasInternet && hasSupabaseConfig) {
           showBanner('warning', 'Mode Offline: Menampilkan data lokal terakhir. Sinkronisasi ditunda.');
         }
-        return;
+        return; // Selesai - data lokal sudah di-set
       }
       
       // ═══════════════════════════════════════════════════════
@@ -388,7 +403,6 @@ export default function App() {
     }
     
     setLoading(true);
-    
     try {
       const client = getSupabaseClient();
       if (!client) {
@@ -429,7 +443,6 @@ export default function App() {
     }
     
     setLoading(true);
-    
     try {
       const client = getSupabaseClient();
       if (!client) {
@@ -495,10 +508,12 @@ export default function App() {
     try {
       const newTimestamp = new Date(newRecord.timestamp).getTime();
       
+      // Urutkan kronologis
       const chronological = [...mutations].sort(
         (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
       
+      // ✅ FIX: Cari record terdekat SEBELUM timestamp input (bukan yang terbaru)
       const prevRecord = chronological
         .filter(r => new Date(r.timestamp).getTime() < newTimestamp)
         .pop() ?? null;
@@ -521,8 +536,9 @@ export default function App() {
         notes: newRecord.notes,
       };
       
+      // OFFLINE-FIRST: Simpan lokal DULU, baru sync jika online
       const updatedLocal = saveLocalMutation(recordToSave);
-      setMutations(updatedLocal);
+      setMutations(updatedLocal); // Update UI langsung dari lokal
       
       const hasInternet = navigator.onLine;
       const hasSupabase = !!(settings.supabaseUrl && settings.supabaseAnonKey);
@@ -543,6 +559,7 @@ export default function App() {
         showBanner('success', 'Pencatatan berhasil disimpan di penyimpanan lokal.');
       }
       
+      // ✅ FIX: Telegram alert berdasarkan STATE TERKINI, bukan record input
       if (settings.telegramEnabled) {
         const currentLatest = [...updatedLocal].sort(
           (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -586,6 +603,7 @@ export default function App() {
     const recordToDelete = mutations.find(m => m.id && String(m.id) === String(id));
     
     try {
+      // Delete lokal by id
       const updatedLocal = deleteLocalMutation(id);
       setMutations(updatedLocal);
       
@@ -594,6 +612,7 @@ export default function App() {
       
       if (hasInternet && hasSupabase && recordToDelete) {
         try {
+          // ✅ FIX: Delete by ID, bukan timestamp (hindari hapus data lain)
           await deleteSupabaseMutation(
             settings.supabaseUrl, 
             settings.supabaseAnonKey, 
