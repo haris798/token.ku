@@ -18,40 +18,55 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version: '22.x'
+          cache: npm
+
+      - name: Verify Node
+        run: |
+          node -v
+          npm -v
 
       - name: Install Dependencies
-        run: npm ci || npm install
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Install Capacitor Android
+        run: |
+          npm install @capacitor/android@latest --save
 
       - name: Build Web Application
         run: npm run build
 
-      - name: Setup Java JDK
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '17'
-          distribution: 'zulu'
 
-      - name: Set up Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Sync Capacitor Android
+      - name: Create Android Platform
         run: |
-          npx cap sync android || npx cap sync
-
-      - name: Build Android App (APK Debug)
-        run: |
-          if [ -d "android" ]; then
-            cd android
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "Direktori 'android' tidak ditemukan. Pastikan platform android sudah ditambahkan (npx cap add android)."
-            exit 1
+          if [ ! -d android ]; then
+            npx cap add android
           fi
 
-      - name: Upload Android Debug APK Artifact
+      - name: Sync Capacitor
+        run: |
+          npx cap sync android
+
+      - name: Build Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: tokenpro-debug-apk
