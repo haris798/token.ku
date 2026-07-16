@@ -69,5 +69,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: tokenpro-apk
-          path: android/app/build/outputs/apk/debug/tokenpro.apk
+          name: tokenpro-debug-apk
+          path: android/app/build/outputs/apk/debug/tokenpro-debug.apk
