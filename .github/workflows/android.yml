@@ -18,11 +18,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: 20
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci || npm install
 
       - name: Build Web Application
         run: npm run build
@@ -30,29 +30,26 @@ jobs:
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'zulu'
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Prepare Capacitor Android
+      - name: Sync Capacitor Android
         run: |
-          # Ensure latest CLI is used to avoid version mismatch
-          npm install -g @capacitor/cli@latest
-          # Add platform if missing
-          if [ ! -d "android" ]; then
-            npm install @capacitor/android
-            npx cap add android
-          fi
-          # Sync assets
-          npx cap sync android
+          npx cap sync android || npx cap sync
 
       - name: Build Android App (APK Debug)
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          if [ -d "android" ]; then
+            cd android
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "Direktori 'android' tidak ditemukan. Pastikan platform android sudah ditambahkan (npx cap add android)."
+            exit 1
+          fi
 
       - name: Upload Android Debug APK Artifact
         uses: actions/upload-artifact@v4

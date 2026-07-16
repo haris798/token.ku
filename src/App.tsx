@@ -66,7 +66,7 @@ export default function App() {
   const [dataLoading, setDataLoading] = useState(false);
   const [isAdminRestricted, setIsAdminRestricted] = useState(false);
 
-  const [mutations, setMutations] = useState<MutationRecord[]>([]);
+  const [mutations, setMutations] = useState<MutationRecord[]>(() => loadLocalMutations());
   const [settings, setSettings] = useState<AppSettings>(() => loadLocalSettings());
   const [showSupabaseErrorModal, setShowSupabaseErrorModal] = useState(false);
 
@@ -145,15 +145,40 @@ export default function App() {
   }, [settings?.theme]);
 
   const loadAppConfigAndData = async () => {
-    setDataLoading(true);
-    try {
-      // Sync Room Database with local storage before reading
-      await syncLocalStorageWithRoomDb();
-      let loadedSettings = loadLocalSettings();
+    // 1. Prioritaskan baca dan tampilkan data lokal sesegera mungkin
+    let loadedSettings = loadLocalSettings();
+    setSettings(loadedSettings);
 
-      // Load remote settings from Supabase if configured
+    let localMutations = loadLocalMutations();
+    // Bersihkan duplikat lokal dengan cepat
+    const uniqueLocal = deduplicateMutations(localMutations);
+    if (uniqueLocal.length !== localMutations.length) {
+      localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
+      localMutations = uniqueLocal;
+    }
+    setMutations(localMutations);
+
+    // Set dataLoading ke true hanya sebagai indikator sinkronisasi di background
+    setDataLoading(true);
+
+    try {
+      // 2. Lakukan sinkronisasi Room DB & Supabase secara asinkron di background
+      await syncLocalStorageWithRoomDb();
+      
+      // Ambil data lokal terbaru lagi setelah sinkronisasi Room DB selesai
+      loadedSettings = loadLocalSettings();
+      localMutations = loadLocalMutations();
+      const uniqueLocalSync = deduplicateMutations(localMutations);
+      if (uniqueLocalSync.length !== localMutations.length) {
+        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocalSync));
+        localMutations = uniqueLocalSync;
+      }
+      setSettings(loadedSettings);
+      setMutations(localMutations);
+
       if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
         try {
+          // Sinkronisasi remote settings
           const remoteSettings = await loadSupabaseSettings(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
           if (remoteSettings) {
             loadedSettings = {
@@ -167,33 +192,17 @@ export default function App() {
               supabaseAnonKey: remoteSettings.supabaseAnonKey || loadedSettings.supabaseAnonKey
             };
             saveLocalSettings(loadedSettings);
+            setSettings(loadedSettings);
           }
-        } catch (settingsErr) {
-          console.warn('Failed to fetch remote settings, using local settings as fallback:', settingsErr);
-        }
-      }
 
-      setSettings(loadedSettings);
-
-      let localMutations = loadLocalMutations();
-      
-      // Auto-clean any local duplicates right away
-      const uniqueLocal = deduplicateMutations(localMutations);
-      if (uniqueLocal.length !== localMutations.length) {
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-        localMutations = uniqueLocal;
-      }
-
-      if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
-        try {
-          // Auto-clean any duplicates inside Supabase database on startup
+          // Bersihkan duplikat di Supabase di background
           try {
             await cleanSupabaseDuplicates(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
           } catch (cleanErr) {
             console.warn('Failed to auto-clean Supabase duplicates on load:', cleanErr);
           }
 
-          // Push any offline-recorded local mutations to Supabase (Auto-Sync)
+          // Mirror data lokal yang ada ke Supabase
           if (localMutations.length > 0) {
             try {
               await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations);
@@ -202,22 +211,18 @@ export default function App() {
             }
           }
 
-          // Pull latest consolidated mutations from Supabase
+          // Ambil data terbaru dari Supabase
           const loadedMutations = await loadSupabaseMutations(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
           localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
           setMutations(loadedMutations);
         } catch (err) {
-          console.error('Failed to load mutations from Supabase, falling back to local storage:', err);
-          setMutations(localMutations);
-          showBanner('warning', 'Supabase tidak terjangkau. Menggunakan data cadangan lokal.');
+          console.error('Failed to sync with Supabase in background, using local cache:', err);
         }
-      } else {
-        setMutations(localMutations);
       }
     } catch (err) {
-      console.error('Error loading config/data:', err);
-      showBanner('error', 'Gagal memuat konfigurasi atau data.');
+      console.error('Error in background data synchronization:', err);
     } finally {
+      // Selesai sinkronisasi background
       setDataLoading(false);
     }
   };
@@ -975,76 +980,73 @@ export default function App() {
         )}
 
         {/* Floating Top Tab Bar */}
-        {!dataLoading && (
-          <div className="sticky top-20 z-40 w-full max-w-xs sm:max-w-md mx-auto my-2">
-            <div className="flex items-center justify-around gap-1 p-1.5 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/60 rounded-[22px] shadow-lg shadow-slate-900/5 dark:shadow-black/30">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                  activeTab === 'dashboard'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                }`}
-                title="Dashboard"
-              >
-                <LayoutDashboard className="h-5 w-5 shrink-0" />
-              </button>
-              <button
-                onClick={() => setActiveTab('input')}
-                className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                  activeTab === 'input'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                }`}
-                title="Input"
-              >
-                <Plus className="h-5 w-5 shrink-0" />
-              </button>
-              <button
-                onClick={() => setActiveTab('prediction')}
-                className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                  activeTab === 'prediction'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                }`}
-                title="Prediksi"
-              >
-                <TrendingUp className="h-5 w-5 shrink-0" />
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                  activeTab === 'history'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                }`}
-                title="Riwayat"
-              >
-                <History className="h-5 w-5 shrink-0" />
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                  activeTab === 'settings'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                }`}
-                title="Seting"
-              >
-                <SettingsIcon className="h-5 w-5 shrink-0" />
-              </button>
-            </div>
+        <div className="sticky top-20 z-40 w-full max-w-xs sm:max-w-md mx-auto my-2">
+          <div className="flex items-center justify-around gap-1 p-1.5 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/60 rounded-[22px] shadow-lg shadow-slate-900/5 dark:shadow-black/30">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+              title="Dashboard"
+            >
+              <LayoutDashboard className="h-5 w-5 shrink-0" />
+            </button>
+            <button
+              onClick={() => setActiveTab('input')}
+              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
+                activeTab === 'input'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+              title="Input"
+            >
+              <Plus className="h-5 w-5 shrink-0" />
+            </button>
+            <button
+              onClick={() => setActiveTab('prediction')}
+              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
+                activeTab === 'prediction'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+              title="Prediksi"
+            >
+              <TrendingUp className="h-5 w-5 shrink-0" />
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
+                activeTab === 'history'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+              title="Riwayat"
+            >
+              <History className="h-5 w-5 shrink-0" />
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
+                activeTab === 'settings'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+              title="Seting"
+            >
+              <SettingsIcon className="h-5 w-5 shrink-0" />
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Inner Content Area */}
         <AnimatePresence mode="wait">
-          {!dataLoading && (
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2 }}
               className="outline-none"
             >
@@ -1098,7 +1100,6 @@ export default function App() {
                 />
               )}
             </motion.div>
-          )}
         </AnimatePresence>
       </main>
 
