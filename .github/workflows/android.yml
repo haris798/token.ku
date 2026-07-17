@@ -66,7 +66,14 @@ jobs:
 
       - name: Read App Name
         run: |
-          APP_NAME=$(node -e "const c=require('./capacitor.config.json'); console.log(c.appName)")
+          # Membaca capacitor.config.ts sebagai text dan mengekstrak appName menggunakan Regex
+          APP_NAME=$(node -e "const fs=require('fs');const c=fs.readFileSync('./capacitor.config.ts','utf8');const m=c.match(/appName\s*:\s*['\"\x60]([^'\"\x60]+)['\"\x60]/);console.log(m?m[1]:'')" | head -n 1)
+          
+          if [ -z "$APP_NAME" ]; then
+            echo "Error: appName tidak ditemukan di capacitor.config.ts"
+            exit 1
+          fi
+          
           SAFE_NAME=$(echo "$APP_NAME" | sed 's/[^a-zA-Z0-9._-]/_/g')
           echo "APP_NAME=$SAFE_NAME" >> $GITHUB_ENV
 
