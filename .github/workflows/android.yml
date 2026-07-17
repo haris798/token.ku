@@ -35,8 +35,7 @@ jobs:
           fi
 
       - name: Install Capacitor Android
-        run: |
-          npm install @capacitor/android@latest --save
+        run: npm install @capacitor/android@latest --save
 
       - name: Build Web Application
         run: npm run build
@@ -57,8 +56,7 @@ jobs:
           fi
 
       - name: Sync Capacitor
-        run: |
-          npx cap sync android
+        run: npx cap sync android
 
       - name: Build Debug APK
         run: |
@@ -66,8 +64,25 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Read App Name
+        run: |
+          APP_NAME=$(node -e "const c=require('./capacitor.config.json'); console.log(c.appName)")
+          SAFE_NAME=$(echo "$APP_NAME" | sed 's/[^a-zA-Z0-9._-]/_/g')
+          echo "APP_NAME=$SAFE_NAME" >> $GITHUB_ENV
+
+      - name: Rename APK
+        run: |
+          APK=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "APK tidak ditemukan!"
+            exit 1
+          fi
+
+          cp "$APK" "android/app/build/outputs/apk/${APP_NAME}.apk"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: tokenpro-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: ${{ env.APP_NAME }}
+          path: android/app/build/outputs/apk/${{ env.APP_NAME }}.apk
