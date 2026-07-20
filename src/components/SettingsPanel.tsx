@@ -174,7 +174,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         supabaseUrl: supabaseUrl.trim(),
         supabaseAnonKey: supabaseAnonKey.trim(),
         exportedAt: new Date().toISOString(),
-        appName: "TokenPro"
+        appName: "Token.ku"
       };
 
       const jsonString = JSON.stringify(configObj, null, 2);
@@ -211,7 +211,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
       }
 
       const exportData = {
-        appName: "TokenPro",
+        appName: "Token.ku",
         exportedFrom: "Supabase",
         exportedAt: new Date().toISOString(),
         settings: supabaseSettings || {
@@ -277,7 +277,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
     setTestLoading(true);
     setTestStatus(null);
 
-    const testMessage = `🔌 *Koneksi TokenPro Sukses!*\n\nBot Telegram Anda telah sukses terhubung dengan aplikasi TokenPro.\n\n🔋 *Ambang Batas Rendah:* ${lowThreshold} kWh\n✅ *Status Notifikasi:* ${telegramEnabled ? 'Aktif' : 'Nonaktif'}\n\nNotifikasi pengingat kWh akan dikirim secara otomatis jika sisa saldo berada di bawah batas minimum ini.`;
+    const testMessage = `🔌 *Koneksi Token.ku Sukses!*\n\nBot Telegram Anda telah sukses terhubung dengan aplikasi Token.ku.\n\n🔋 *Ambang Batas Rendah:* ${lowThreshold} kWh\n✅ *Status Notifikasi:* ${telegramEnabled ? 'Aktif' : 'Nonaktif'}\n\nNotifikasi pengingat kWh akan dikirim secara otomatis jika sisa saldo berada di bawah batas minimum ini.`;
 
     const success = await sendTelegramNotification(telegramToken.trim(), telegramChatId.trim(), testMessage);
     
@@ -296,7 +296,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <Settings className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800">Pengaturan TokenPro</h3>
+          <h3 className="font-bold text-slate-800">Pengaturan Token.ku</h3>
           <p className="text-xs text-slate-500">Konfigurasi ambang batas kWh dan integrasi bot Telegram</p>
         </div>
       </div>
@@ -516,7 +516,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                   Integrasi Database Supabase
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                  Hubungkan data pemakaian TokenPro ke database PostgreSQL kustom Anda di Supabase untuk sinkronisasi sekunder.
+                  Hubungkan data pemakaian Token.ku ke database PostgreSQL kustom Anda di Supabase untuk sinkronisasi sekunder.
                 </p>
               </div>
 
@@ -665,7 +665,7 @@ with check (true);`);
             <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-2">
               <div>
                 <p className="font-semibold text-slate-700 dark:text-slate-300">💡 Cara Kerja Sinkronisasi:</p>
-                <p>Aplikasi TokenPro akan otomatis merekam pemakaian secara real-time ke tabel Supabase Anda di latar belakang setiap kali Anda mengklik "Simpan Pencatatan" jika URL dan Anon Key di atas telah terisi lengkap.</p>
+                <p>Aplikasi Token.ku akan otomatis merekam pemakaian secara real-time ke tabel Supabase Anda di latar belakang setiap kali Anda mengklik "Simpan Pencatatan" jika URL dan Anon Key di atas telah terisi lengkap.</p>
               </div>
 
               {onMirrorAllToSupabase && (

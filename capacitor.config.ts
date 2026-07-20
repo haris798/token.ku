@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tokenpro.app',
-  appName: 'TokenPro',
+  appId: 'com.tokenku.app',
+  appName: 'Token.ku',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

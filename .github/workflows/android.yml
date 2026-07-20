@@ -18,78 +18,41 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-          cache: npm
-
-      - name: Verify Node
-        run: |
-          node -v
-          npm -v
+          node-version: 22
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
-      - name: Install Capacitor Android
-        run: npm install @capacitor/android@latest --save
+        run: npm ci || npm install
 
       - name: Build Web Application
         run: npm run build
 
-      - name: Setup Java
+      - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: '21'
+          distribution: temurin
 
-      - name: Setup Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Android Platform
+      - name: Sync Capacitor Android
         run: |
-          if [ ! -d android ]; then
-            npx cap add android
-          fi
+          npx cap sync android || npx cap sync
 
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Build Debug APK
+      - name: Build Android App (APK Debug)
         run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Read App Name
-        run: |
-          # Membaca capacitor.config.ts sebagai text dan mengekstrak appName menggunakan Regex
-          APP_NAME=$(node -e "const fs=require('fs');const c=fs.readFileSync('./capacitor.config.ts','utf8');const m=c.match(/appName\s*:\s*['\"\x60]([^'\"\x60]+)['\"\x60]/);console.log(m?m[1]:'')" | head -n 1)
-          
-          if [ -z "$APP_NAME" ]; then
-            echo "Error: appName tidak ditemukan di capacitor.config.ts"
-            exit 1
-          fi
-          
-          SAFE_NAME=$(echo "$APP_NAME" | sed 's/[^a-zA-Z0-9._-]/_/g')
-          echo "APP_NAME=$SAFE_NAME" >> $GITHUB_ENV
-
-      - name: Rename APK
-        run: |
-          APK=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
-
-          if [ -z "$APK" ]; then
-            echo "APK tidak ditemukan!"
+          if [ -d "android" ]; then
+            cd android
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "Direktori 'android' tidak ditemukan. Pastikan platform android sudah ditambahkan (npx cap add android)."
             exit 1
           fi
 
-          cp "$APK" "android/app/build/outputs/apk/${APP_NAME}.apk"
-
-      - name: Upload APK
+      - name: Upload Android Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}
-          path: android/app/build/outputs/apk/${{ env.APP_NAME }}.apk
+          name: tokenpro-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

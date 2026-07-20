@@ -1,0 +1,1310 @@
+%PDF-1.3
+%�߬�
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 6836
+>>
+stream
+0.5670000000000001 w
+0 G
+0.31 0.27 0.9 rg
+0. 841.8899999999999864 595.2755905511811534 -34.0157480314960665 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+56.6929133858267775 822.0474803149605805 Td
+(LAPORAN ANALISIS PROYEK TOKENPRO) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+439.3700787401575099 822.0474803149605805 Td
+(RAHASIA & INTERNAL) Tj
+ET
+BT
+/F2 24 Tf
+27.5999999999999979 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 742.6774015748030706 Td
+(LAPORAN ANALISIS SISTEM) Tj
+ET
+BT
+/F2 18 Tf
+20.6999999999999993 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 720.0002362204724022 Td
+(Proyek TokenPro � Monitoring & Audit Token Listrik) Tj
+ET
+0.31 0.27 0.9 RG
+2.8346456692913389 w
+56.6929133858267775 697.3230708661417339 m
+538.5826771653544256 697.3230708661417339 l
+S
+0.97 0.98 0.99 rg
+56.6929133858267775 668.9766141732283131 481.8897637795275841 -90.708661417322844 re
+f
+0.89 0.91 0.94 RG
+0.5669291338582678 w
+56.6929133858267775 668.9766141732283131 481.8897637795275841 -90.708661417322844 re
+S
+BT
+/F2 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+70.8661417322834666 649.1340944881889072 Td
+(Tanggal Laporan:) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+70.8661417322834666 629.291574803149615 Td
+(Penulis / Analis:) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+70.8661417322834666 609.4490551181102092 Td
+(Arsitektur Inti:) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+70.8661417322834666 589.6065354330708033 Td
+(Status Sinkronisasi:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+184.2519685039370358 649.1340944881889072 Td
+(8 Juli 2026) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+184.2519685039370358 629.291574803149615 Td
+(AI Coding Agent \(Google AI Studio Build\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.278 0.333 0.412 rg
+184.2519685039370358 609.4490551181102092 Td
+(React 19 \(Vite\) + Supabase REST + Cordova WebView Client) Tj
+ET
+BT
+/F2 10 Tf
+11.5 TL
+0.063 0.725 0.506 rg
+184.2519685039370358 589.6065354330708033 Td
+(TERINTERGRASI \(Pembaruan Skema Sukses\)) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 527.2443307086614368 Td
+(1. Ringkasan & Tujuan Proyek) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 521.5750393700786844 m
+538.5826771653544256 521.5750393700786844 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 501.7325196850393354 Td
+(Aplikasi TokenPro adalah solusi mobile-first modern untuk membantu rumah tangga dan pengelola fasilitas) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 486.9923622047243725 Td
+(mencatat, memantau, dan memproyeksikan konsumsi energi listrik pintar secara mandiri. Aplikasi dirancang) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 472.2522047244093528 Td
+(dengan pendekatan offline-first, di mana data transaksi \(mutasi kWh\) dan preferensi konfigurasi disimpan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 457.5120472440944468 Td
+(terlebih dahulu di penyimpanan lokal browser \(LocalStorage\) untuk menjamin responsivitas maksimal, dan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 442.7718897637795408 Td
+(disinkronkan secara mulus ke database awan Supabase jika koneksi internet tersedia.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 420.9451181102362511 Td
+(Dengan mengintegrasikan token kelistrikan ke dalam satu dasbor analitik interaktif, TokenPro membantu) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 406.2049606299212883 Td
+(pengguna mengidentifikasi pemborosan listrik, memperkirakan tanggal habisnya daya token sebelum alarm) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 391.4648031496063822 Td
+(berbunyi, serta mengirimkan notifikasi instan langsung ke Telegram pengguna.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 358.2994488188977584 Td
+(Tujuan Utama Sistem:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 346.9608661417323674 Td
+(� Pencatatan Transaksi kWh: Mendata secara berkala pembelanjaan token listrik baru serta pemotongan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 332.2207086614174614 Td
+(konsumsi harian.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 314.6459055118111792 Td
+(� Pemantauan & Prediksi Cerdas: Menghitung sisa kWh yang tersisa dan memproyeksikan sisa waktu) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 299.9057480314962731 Td
+(pemakaian \(dalam hari/jam\) berdasarkan histori pemakaian riil.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 282.3309448818899909 Td
+(� Notifikasi Telegram: Mengirimkan alert peringatan otomatis ke Telegram Bot milik pengguna ketika sisa) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 267.5907874015750849 Td
+(kWh menyentuh ambang batas kritis \(low threshold\) yang dapat diatur sesuka hati.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 250.0159842519688027 Td
+(� Multi-Platform & Kompatibilitas Tinggi: Dapat dijalankan langsung dari browser, diinstal sebagai PWA) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 235.2758267716538967 Td
+(\(Progressive Web App\), maupun dikompilasi menjadi paket aplikasi native Android/iOS melalui) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 220.5356692913389907 Td
+(Cordova/VoltBuilder.) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 180.2837007874019264 Td
+(2. Arsitektur Proyek & Struktur Folder) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 174.6144094488192593 m
+538.5826771653544256 174.6144094488192593 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 154.7718897637798818 Td
+(Proyek ini dirancang menggunakan arsitektur modular berbasis React 19 dan TypeScript yang sangat efisien) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 140.0317322834649758 Td
+(dan mudah dipelihara. Struktur folder disusun dengan memisahkan bagian antarmuka \(components\), logika) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 125.2915748031500698 Td
+(basis data \(lib/db.ts\), penanganan autentikasi \(lib/supabaseAuth.ts\), dan saluran notifikasi \(lib/telegram.ts\).) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 92.1262204724413323 Td
+(Struktur Direktori Utama:) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+278.4377952755905881 28.3466929133857093 Td
+(Halaman 1) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 28.3466929133857093 Td
+(Diproduksi secara otomatis oleh TokenPro Analizer) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+496.0629921259842945 28.3466929133857093 Td
+(Versi 1.1) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 8210
+>>
+stream
+1.4173228346456694 w
+0.89 0.91 0.94 RG
+0.31 0.27 0.9 rg
+0. 841.8899999999999864 595.2755905511811534 -34.0157480314960665 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+56.6929133858267775 822.0474803149605805 Td
+(LAPORAN ANALISIS PROYEK TOKENPRO) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+439.3700787401575099 822.0474803149605805 Td
+(RAHASIA & INTERNAL) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+65.1968503937007995 771.0238582677164914 Td
+(� /src/App.tsx � Berperan sebagai pusat kontrol utama aplikasi. Mengatur sirkulasi status \(state) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+73.7007874015748143 756.2837007874015853 Td
+(management\), penanganan visual modal, autentikasi sesi, integrasi sinkronisasi data latar belakang, serta) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+73.7007874015748143 741.5435433070865656 Td
+(navigasi tampilan utama.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 723.9687401574802834 Td
+(� /src/types.ts � Mendefinisikan tipe data TypeScript yang ketat \(seperti AppSettings dan MutationRecord\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 709.2285826771653774 Td
+(untuk mencegah ketidakcocokan tipe di seluruh siklus pengembangan.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 691.6537795275589815 Td
+(� /src/components/Dashboard.tsx � Panel analitik utama yang kaya visual. Menyediakan grafik tren) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 676.9136220472440755 Td
+(konsumsi harian \(Recharts\), gauge bundar sisa kWh, ringkasan pengeluaran riil bulan ini, serta indikator) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 662.1734645669290558 Td
+(ambang batas aman listrik.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 644.5986614173227736 Td
+(� /src/components/SettingsPanel.tsx � Pusat konfigurasi pengguna untuk memodifikasi token Telegram,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 629.8585039370077538 Td
+(ambang batas kritis, tarif per kWh, preferensi tema gelap/terang, kredensial koneksi Supabase, serta) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 615.1183464566928478 Td
+(instruksi SQL migrasi mandiri.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 597.5435433070865656 Td
+(� /src/components/ManualInput.tsx � Formulir pencatatan transaksi pembelian token \(penambahan saldo) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 582.8033858267715459 Td
+(kWh\) atau pendataan audit manual penggunaan listrik harian.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 565.2285826771652637 Td
+(� /src/components/HistoryTable.tsx � Tabel mutasi riwayat transaksi yang dilengkapi fungsi pencarian teks,) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 550.4884251968503577 Td
+(penyaringan kategori \(pembelian/pemakaian\), serta opsi penghapusan log secara individual.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 532.9136220472439618 Td
+(� /src/lib/db.ts � Abstraksi lapisan database yang menjembatani penyimpanan lokal \(LocalStorage\) dengan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 518.1734645669289421 Td
+(PostgreSQL Supabase menggunakan protokol HTTP REST API \(PostgREST\) yang berlatensi rendah.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 500.5986614173227167 Td
+(� /src/lib/supabaseAuth.ts � Mengelola alur pendaftaran akun, login sesi, pemulihan profil, dan logout) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 485.858503937007697 Td
+(pengguna ke sistem Supabase Auth via clientless endpoints.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 468.2837007874014148 Td
+(� /src/lib/telegram.ts � Modul pengiriman notifikasi visual ke Telegram API menggunakan library standar) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 453.5435433070864519 Td
+(Fetch.) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 413.2915748031495013 Td
+(3. Alur Aplikasi & Strategi Sinkronisasi) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 407.6222834645668058 m
+538.5826771653544256 407.6222834645668058 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 387.7797637795274568 Td
+(Sistem TokenPro menerapkan model "Hybrid Offline-Online Persistence". Seluruh operasi penulisan data) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 373.0396062992124939 Td
+(oleh pengguna pertama-tama akan dicatat dan dihitung di LocalStorage. Hal ini membuat aplikasi terasa) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 358.2994488188975879 Td
+(instan tanpa delay jaringan. Selanjutnya, jika konfigurasi API Supabase terdeteksi aktif, aplikasi akan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 343.5592913385826819 Td
+(menginisiasi proses sinkronisasi asinkron dua arah secara otomatis.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 310.3939370078740012 Td
+(Strategi Sinkronisasi Supabase:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 299.0553543307087239 Td
+(Untuk memastikan kompatibilitas penuh dengan lingkungan Cordova \(tanpa memerlukan dependensi native) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 284.3151968503937042 Td
+(browser yang berat\), modul lib/db.ts menggunakan Fetch API murni untuk berinteraksi dengan API REST) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 269.5750393700787981 Td
+(PostgREST Supabase. Ini meminimalkan ukuran bundel aplikasi dan menjamin kompatibilitas 100% pada) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 254.8348818897638921 Td
+(semua engine WebView.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 233.0081102362206593 Td
+(� Sinkronisasi Tabel token_settings: Menggunakan metode POST dengan header "Prefer:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 218.2679527559056396 Td
+(resolution=merge-duplicates" \(Upsert Atomik\). Jika terjadi error karena keterbatasan izin atau) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 203.5277952755907336 Td
+(ketidakcocokan versi tabel, sistem akan melakukan fallback otomatis menggunakan metode PUT ke) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 188.7876377952758276 Td
+(endpoint baris default \(?id=eq.default\).) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 171.2128346456695454 Td
+(� Sinkronisasi Tabel token_mutations: Transaksi mutasi lokal dikirimkan dalam bentuk batch muatan JSON) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 156.4726771653546393 Td
+(ke endpoint Supabase. Kolom pencatat waktu \(timestamp\) dan id unik \(UUID\) digunakan untuk) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 141.7325196850397333 Td
+(memastikan tidak ada data ganda yang terekam di sisi cloud server.) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 101.4805511811027827 Td
+(4. Analisis Masalah, Bug & Keamanan) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 95.8112598425201014 m
+538.5826771653544256 95.8112598425201014 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 75.9687401574807382 Td
+(Melalui analisis audit kode mendalam pada seluruh basis file proyek, kami mengidentifikasi beberapa titik) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 61.2285826771658321 Td
+(kerentanan penting, bug laten, serta ketidakcocokan struktur data yang wajib diantisipasi agar tidak) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+278.4377952755905881 28.3466929133857093 Td
+(Halaman 2) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 28.3466929133857093 Td
+(Diproduksi secara otomatis oleh TokenPro Analizer) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+496.0629921259842945 28.3466929133857093 Td
+(Versi 1.1) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 7290
+>>
+stream
+1.4173228346456694 w
+0.89 0.91 0.94 RG
+0.31 0.27 0.9 rg
+0. 841.8899999999999864 595.2755905511811534 -34.0157480314960665 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+56.6929133858267775 822.0474803149605805 Td
+(LAPORAN ANALISIS PROYEK TOKENPRO) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+439.3700787401575099 822.0474803149605805 Td
+(RAHASIA & INTERNAL) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+56.6929133858267775 771.0238582677164914 Td
+(mengganggu operasional pengguna:) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 737.8585039370078675 Td
+(Masalah Utama & Solusi yang Telah Diterapkan:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 726.5199212598424765 Td
+(� Bug Ketidakcocokan Skema Tabel \(kwh_tariff\): Tabel "token_settings" di beberapa instalasi database) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 711.7797637795274568 Td
+(Supabase pengguna belum memiliki kolom "kwh_tariff". Hal ini menyebabkan sinkronisasi gagal total saat) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 697.0396062992125508 Td
+(mencoba mengirim data tarif kWh ke awan. SOLUSI: Kami telah memperbarui instruksi SQL di) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 682.2994488188976447 Td
+(SettingsPanel dan App.tsx, serta menambahkan logika "Self-Healing Fallback" di lib/db.ts yang otomatis) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 667.559291338582625 Td
+(menyaring keluar atribut kwh_tariff jika terdeteksi kegagalan kolom pada server Supabase.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 649.9844881889762291 Td
+(� Masalah Validasi Nilai Input: Pada ManualInput.tsx, nilai input numerik untuk kWh tidak membatasi angka) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 635.2443307086613231 Td
+(negatif secara ketat pada level HTML5, yang berisiko membuat sisa kWh pengguna bernilai tidak realistis.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 617.6695275590550409 Td
+(� Penanganan Sesi Auth Kadaluarsa: Jika token sesi login Supabase kadaluarsa saat aplikasi berada di) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 602.9293700787400212 Td
+(latar belakang, fetch API akan mengembalikan kode status 401/403 yang dapat menyebabkan UI) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 588.1892125984251152 Td
+(mendadak kosong atau mengalami error tidak tertangani \(uncaught exception\).) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 559.2758267716533283 Td
+(Keamanan API Keys di Sisi Klien:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 547.9372440944880509 Td
+(Karena TokenPro didesain untuk dapat diekspor menjadi aplikasi hybrid Cordova/Android, kredensial) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 533.1970866141730312 Td
+(Supabase \(URL & Anon Key\) diinput secara langsung oleh pengguna akhir di panel pengaturan dan disimpan) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 518.4569291338581252 Td
+(di memori internal perangkat secara terenkripsi \(atau via LocalStorage aman\). Hal ini sangat aman karena) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 503.7167716535431623 Td
+(setiap pengguna mengontrol dan menggunakan instans database Supabase milik mereka sendiri secara) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 488.9766141732281994 Td
+(pribadi \(Bring Your Own Database\).) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 444.4726771653541277 Td
+(5. Rekomendasi Peningkatan Sistem) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 438.8033858267714322 m
+538.5826771653544256 438.8033858267714322 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 418.9608661417320832 Td
+(Untuk meningkatkan efisiensi pemeliharaan sistem jangka panjang dan meningkatkan pengalaman) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 404.2207086614171772 Td
+(pengguna, berikut adalah beberapa usulan optimasi teknis yang disarankan:) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 371.0553543307085533 Td
+(1. Penggunaan Pustaka @supabase/supabase-js Terpadu) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 359.7167716535431623 Td
+(Kelebihan: Mempermudah penulisan query database karena dilengkapi compiler tipe bawaan, mendukung) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 344.9766141732282563 Td
+(pemantauan tabel waktu-nyata \(Realtime Subscriptions\) secara native tanpa polling berkala.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 323.1498425196849666 Td
+(Kekurangan: Meningkatkan ukuran bundel JavaScript sekitar 40-50KB, yang perlu dioptimalkan agar tidak) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 308.4096850393700606 Td
+(memperlambat waktu muat awal pada ponsel Android lawas.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 275.2443307086614368 Td
+(2. Mekanisme Retry & Network Resilience) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 263.9057480314960458 Td
+(Mengingat aplikasi hybrid sering berpindah dari jaringan seluler ke Wi-Fi, sangat disarankan untuk) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 249.1655905511811397 Td
+(menerapkan pola "Exponential Backoff Retry" pada fetch API untuk menghindari kegagalan sinkronisasi saat) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 234.4254330708662337 Td
+(terjadi putusnya koneksi sesaat.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 201.2600787401576099 Td
+(3. Skema RLS \(Row Level Security\) yang Lebih Ketat) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 189.9214960629922189 Td
+(Memastikan bahwa aturan keamanan RLS di Supabase dikonfigurasi dengan aturan "auth.uid\(\) = user_id") Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 175.1813385826773128 Td
+(agar tidak ada pengguna yang dapat mengintip atau memodifikasi data konsumsi token milik pengguna lain) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 160.4411811023622931 Td
+(secara ilegal.) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.31 0.275 0.898 rg
+56.6929133858267775 115.937244094488392 Td
+(6. Kompatibilitas Cordova / VoltBuilder) Tj
+ET
+0.89 0.91 0.94 RG
+1.4173228346456694 w
+56.6929133858267775 110.267952755905668 m
+538.5826771653544256 110.267952755905668 l
+S
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+56.6929133858267775 90.4254330708663474 Td
+(Aplikasi TokenPro dikonfigurasi dengan sangat baik untuk ekosistem aplikasi mobile hybrid:) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+278.4377952755905881 28.3466929133857093 Td
+(Halaman 3) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 28.3466929133857093 Td
+(Diproduksi secara otomatis oleh TokenPro Analizer) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+496.0629921259842945 28.3466929133857093 Td
+(Versi 1.1) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 2030
+>>
+stream
+1.4173228346456694 w
+0.89 0.91 0.94 RG
+0.31 0.27 0.9 rg
+0. 841.8899999999999864 595.2755905511811534 -34.0157480314960665 re
+f
+BT
+/F2 8 Tf
+9.1999999999999993 TL
+1. g
+56.6929133858267775 822.0474803149605805 Td
+(LAPORAN ANALISIS PROYEK TOKENPRO) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+439.3700787401575099 822.0474803149605805 Td
+(RAHASIA & INTERNAL) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+65.1968503937007995 771.0238582677164914 Td
+(� Tanpa Panggilan Node Native: Semua modul menggunakan library JavaScript murni yang berjalan di atas) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.886 0.91 0.941 rg
+73.7007874015748143 756.2837007874015853 Td
+(thread renderer WebView standar tanpa bergantung pada fitur Node.js backend.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 738.7088976377953031 Td
+(� Kompatibilitas Desain Responsif: Menggunakan Tailwind CSS v4 dengan tata letak adaptif yang) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 723.9687401574802834 Td
+(sepenuhnya mendukung "SafeArea Insets" pada perangkat berponi \(Notch\) serta orientasi layar) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 709.2285826771653774 Td
+(portrait/landscape otomatis.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+65.1968503937007995 691.6537795275589815 Td
+(� Sistem Tema Fleksibel: Mode gelap dan terang beralih secara langsung dengan memanipulasi class) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.059 0.09 0.165 rg
+73.7007874015748143 676.9136220472440755 Td
+(dokumen HTML standar, sehingga bebas kedipan visual saat aplikasi mobile pertama kali dibuka.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+278.4377952755905881 28.3466929133857093 Td
+(Halaman 4) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+56.6929133858267775 28.3466929133857093 Td
+(Diproduksi secara otomatis oleh TokenPro Analizer) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.278 0.333 0.412 rg
+496.0629921259842945 28.3466929133857093 Td
+(Versi 1.1) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260708125816-00'00')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000025139 00000 n 
+0000026979 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000007040 00000 n 
+0000007177 00000 n 
+0000015439 00000 n 
+0000015576 00000 n 
+0000022918 00000 n 
+0000023056 00000 n 
+0000025214 00000 n 
+0000025340 00000 n 
+0000025471 00000 n 
+0000025605 00000 n 
+0000025743 00000 n 
+0000025867 00000 n 
+0000025996 00000 n 
+0000026128 00000 n 
+0000026264 00000 n 
+0000026392 00000 n 
+0000026519 00000 n 
+0000026648 00000 n 
+0000026781 00000 n 
+0000026883 00000 n 
+0000027232 00000 n 
+0000027318 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <604814D4FE38B1FDCFB39D7B306203FA> <604814D4FE38B1FDCFB39D7B306203FA> ]
+>>
+startxref
+27422
+%%EOF

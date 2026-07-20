@@ -570,7 +570,7 @@ export default function App() {
             dateStyle: 'medium',
             timeStyle: 'short',
           });
-          const alertMsg = `⚠️ *TokenPro - Sisa kWh Rendah!* ⚠️\n\n🔋 *Sisa kWh:* ${currentLatest.remainingKwh.toFixed(2)} kWh\n📉 *Ambang Batas:* ${settings.lowThreshold.toFixed(2)} kWh\n⏰ *Waktu:* ${formattedDate}\n\n📝 *Catatan:* ${currentLatest.notes || '-'}\n\nSegera lakukan pengisian token.`;
+          const alertMsg = `⚠️ *Token.ku - Sisa kWh Rendah!* ⚠️\n\n🔋 *Sisa kWh:* ${currentLatest.remainingKwh.toFixed(2)} kWh\n📉 *Ambang Batas:* ${settings.lowThreshold.toFixed(2)} kWh\n⏰ *Waktu:* ${formattedDate}\n\n📝 *Catatan:* ${currentLatest.notes || '-'}\n\nSegera lakukan pengisian token.`;
           
           const telSuccess = await sendTelegramNotification(
             settings.telegramToken, 
@@ -782,7 +782,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-800">
         <Loader2 className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
-        <h2 className="text-lg font-bold font-display tracking-wide">Memuat TokenPro...</h2>
+        <h2 className="text-lg font-bold font-display tracking-wide">Memuat Token.ku...</h2>
         <p className="text-xs text-slate-400 mt-1">Menginisialisasi sistem keamanan & koneksi cloud</p>
       </div>
     );
@@ -798,7 +798,7 @@ export default function App() {
           <div className="space-y-2">
             <h2 className="text-2xl font-extrabold font-display tracking-tight text-slate-900">Akses Ditolak (Locked)</h2>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Sistem autentikasi TokenPro dikunci khusus hanya untuk akun admin pribadi pemilik aplikasi. Anda masuk dengan email:
+              Sistem autentikasi Token.ku dikunci khusus hanya untuk akun admin pribadi pemilik aplikasi. Anda masuk dengan email:
             </p>
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-mono text-xs font-semibold text-slate-700">
               {user?.email}
@@ -827,7 +827,7 @@ export default function App() {
               <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-md">
                 <Battery className="h-7 w-7 text-white" />
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight font-display">TokenPro</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight font-display">Token.ku</h1>
               <p className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Autentikasi Supabase Cloud</p>
             </div>
           </div>
@@ -996,7 +996,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-xl font-extrabold tracking-tight font-display text-slate-950 dark:text-white flex items-center gap-1.5 flex-wrap">
-                TokenPro
+                Token.ku
                 <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-1.5 py-0.5 rounded-md uppercase tracking-wider">H</span>
                 {isCloudflareProxy && (
                   <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-1 border border-orange-200/40 dark:border-orange-900/40">
@@ -1061,7 +1061,7 @@ export default function App() {
         {dataLoading && (
           <div className="p-4 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-2xl flex items-center gap-3 text-xs border border-slate-200/60 dark:border-slate-800 font-medium font-sans">
             <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-            <span>Sedang memuat pemakaian dan konfigurasi TokenPro Anda...</span>
+            <span>Sedang memuat pemakaian dan konfigurasi Token.ku Anda...</span>
           </div>
         )}
         
@@ -1185,7 +1185,7 @@ export default function App() {
       
       <footer className="mt-auto py-6 px-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-400 dark:text-slate-500 transition-colors duration-300">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p>© {new Date().getFullYear()} TokenPro.</p>
+          <p>© {new Date().getFullYear()} Token.ku.</p>
           <div className="flex items-center gap-4">
             {settings?.supabaseUrl ? (
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
