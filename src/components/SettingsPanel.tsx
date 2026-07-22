@@ -290,14 +290,14 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
   };
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 max-w-xl mx-auto space-y-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm p-6 max-w-xl mx-auto space-y-6 transition-colors duration-300">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+        <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
           <Settings className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800">Pengaturan Token.ku</h3>
-          <p className="text-xs text-slate-500">Konfigurasi ambang batas kWh dan integrasi bot Telegram</p>
+          <h3 className="font-bold text-slate-800 dark:text-slate-200">Pengaturan Token.ku</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Konfigurasi ambang batas kWh dan integrasi bot Telegram</p>
         </div>
       </div>
 
@@ -375,7 +375,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                   kWh
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 Notifikasi Telegram otomatis dikirim saat sisa saldo kWh berada di bawah angka ini.
               </p>
             </div>
@@ -399,7 +399,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                   Rp
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                 Tarif rupiah per kWh listrik PLN (Contoh standar: 1444.7). Digunakan untuk menghitung nilai rupiah konsumsi harian di Dashboard.
               </p>
             </div>
@@ -409,12 +409,12 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         {activeSubTab === 'telegram' && (
           <>
             {/* Telegram Enable Toggle */}
-            <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+            <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
               <div>
-                <label className="block text-sm font-semibold text-slate-800">
+                <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">
                   Aktifkan Notifikasi Telegram
                 </label>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Kirim alarm otomatis saat saldo listrik menipis
                 </p>
               </div>
@@ -439,9 +439,9 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         {activeSubTab === 'telegram' && (
           <>
             {/* Telegram parameters */}
-            <div className={`space-y-4 pt-2 border-t border-slate-100 transition-all ${telegramEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+            <div className={`space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800 transition-all ${telegramEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Telegram Bot Token
             </label>
             <input
@@ -450,12 +450,12 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
               disabled={isLoading || !telegramEnabled}
               value={telegramToken}
               onChange={(e) => setTelegramToken(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-all font-mono"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-sm outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
               Telegram Chat ID
             </label>
             <input
@@ -464,10 +464,10 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
               disabled={isLoading || !telegramEnabled}
               value={telegramChatId}
               onChange={(e) => setTelegramChatId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-all font-mono"
+              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-sm outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
             />
-            <p className="text-[11px] text-slate-500 mt-1">
-              Bisa didapatkan dari bot Telegram seperti <code className="font-semibold text-indigo-600 bg-indigo-50 px-1 rounded">@userinfobot</code>.
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Bisa didapatkan dari bot Telegram seperti <code className="font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/50 px-1 rounded">@userinfobot</code>.
             </p>
           </div>
 
@@ -477,7 +477,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
               type="button"
               disabled={testLoading || isLoading || !telegramEnabled || !telegramToken || !telegramChatId}
               onClick={handleTestTelegram}
-              className="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-xs transition-all flex items-center justify-center gap-1.5 self-start disabled:opacity-50"
+              className="py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-medium text-xs transition-all flex items-center justify-center gap-1.5 self-start disabled:opacity-50"
             >
               {testLoading ? (
                 <div className="h-3.5 w-3.5 border-2 border-slate-700 border-t-transparent rounded-full animate-spin" />
