@@ -16,6 +16,11 @@
   --chart-tooltip-border: #f1f5f9;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 .dark {
   --chart-grid: #1e293b;
   --chart-text: #94a3b8;
