@@ -8,17 +8,13 @@ interface DashboardProps {
   lowThreshold: number;
   kwhTariff?: number;
   activeTab?: 'dashboard' | 'prediction';
-  onRefresh?: () => Promise<void>;
-  isRefreshing?: boolean;
 }
 
 export default function Dashboard({ 
   mutations, 
   lowThreshold, 
   kwhTariff = 1444.7, 
-  activeTab = 'dashboard',
-  onRefresh,
-  isRefreshing = false
+  activeTab = 'dashboard'
 }: DashboardProps) {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
@@ -553,27 +549,6 @@ export default function Dashboard({
 
   return (
     <div className="space-y-6">
-      {/* Top action/info bar with Refresh Button */}
-      {onRefresh && (
-        <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 px-5 py-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-xs flex-wrap transition-colors duration-300">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Status Sinkronisasi Supabase
-            </span>
-          </div>
-          <button
-            type="button"
-            disabled={isRefreshing}
-            onClick={onRefresh}
-            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-700/60 text-white font-extrabold text-xs rounded-xl flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95 select-none"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Memperbarui...' : 'Refresh Data'}</span>
-          </button>
-        </div>
-      )}
-
       {activeTab === 'dashboard' && (
         <>
           {/* Kartu Ringkasan Konsumsi Bulan Ini */}

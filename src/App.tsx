@@ -1,15 +1,6 @@
 import { useState, useEffect, useMemo, useRef, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  initAuth,
-  signInWithEmail,
-  signUpWithEmail,
-  signInWithGoogle,
-  logoutSupabase,
-  getSupabaseClient,
-  SupabaseUserMapped
-} from './lib/supabaseAuth';
-import {
   loadLocalSettings,
   saveLocalSettings,
   loadLocalMutations,
@@ -50,7 +41,8 @@ import {
   Copy,
   Sun,
   Moon,
-  Plus
+  Plus,
+  Database
 } from 'lucide-react';
 
 // Components
@@ -82,32 +74,14 @@ function useOnlineStatus() {
 }
 
 export default function App() {
-  const [user, setUser] = useState<SupabaseUserMapped | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
-  const [isAdminRestricted, setIsAdminRestricted] = useState(false);
   const [mutations, setMutations] = useState<MutationRecord[]>(() => loadLocalMutations());
   const [settings, setSettings] = useState<AppSettings>(() => loadLocalSettings());
   const [showSupabaseErrorModal, setShowSupabaseErrorModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'prediction' | 'history' | 'settings'>('dashboard');
   const [isSaving, setIsSaving] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
-
-  // Supabase Custom Login Form States
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [showConfigInput, setShowConfigInput] = useState(false);
-  const [tempSupabaseUrl, setTempSupabaseUrl] = useState(() => {
-    const s = loadLocalSettings();
-    return s.supabaseUrl || (import.meta as any).env.VITE_SUPABASE_URL || '';
-  });
-  const [tempSupabaseAnonKey, setTempSupabaseAnonKey] = useState(() => {
-    const s = loadLocalSettings();
-    return s.supabaseAnonKey || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '';
-  });
 
   const isCloudflareProxy = useMemo(() => {
     return window.location.hostname === 'token.haris443.workers.dev' || window.location.hostname.includes('workers.dev');
@@ -142,37 +116,17 @@ export default function App() {
     };
   }, []);
 
-  const initAuthListener = () => {
-    return initAuth(
-      async (currentUser, accessToken) => {
-        setUser(currentUser);
-        setToken(accessToken);
-
-        if (!currentUser.email || currentUser.email.toLowerCase() !== 'haris443@gmail.com') {
-          setIsAdminRestricted(true);
-          setLoading(false);
-          return;
-        }
-
-        setIsAdminRestricted(false);
-        await loadAppConfigAndData();
-        setLoading(false);
-      },
-      () => {
-        setUser(null);
-        setToken(null);
-        setLoading(false);
-      }
-    );
-  };
-
   useEffect(() => {
-    const unsubscribe = initAuthListener();
-    return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
+    const initialize = async () => {
+      await loadAppConfigAndData();
+      
+      const loadedSettings = loadLocalSettings();
+      if (!loadedSettings.supabaseUrl || !loadedSettings.supabaseAnonKey) {
+        setActiveTab('settings');
       }
+      setLoading(false);
     };
+    initialize();
   }, []);
 
   // ✅ Auto-sync saat koneksi kembali online
@@ -180,14 +134,14 @@ export default function App() {
     const wasOffline = prevOnlineRef.current === false;
     const isNowOnline = isOnline === true;
     
-    if (wasOffline && isNowOnline && user && !isAdminRestricted) {
+    if (wasOffline && isNowOnline) {
       console.log('[App] Connection restored, auto-syncing...');
       showBanner('success', 'Koneksi pulih! Melakukan sinkronisasi data...');
       loadAppConfigAndData();
     }
     
     prevOnlineRef.current = isOnline;
-  }, [isOnline, user, isAdminRestricted]);
+  }, [isOnline]);
 
   useEffect(() => {
     if (settings?.theme === 'dark') {
@@ -305,195 +259,6 @@ export default function App() {
     }
   };
 
-  const handleRefreshDashboard = async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    
-    try {
-      await syncLocalStorageWithRoomDb();
-      let loadedSettings = loadLocalSettings();
-      
-      if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
-        try {
-          const remoteSettings = await loadSupabaseSettings(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
-          if (remoteSettings) {
-            loadedSettings = {
-              ...loadedSettings,
-              telegramToken: remoteSettings.telegramToken ?? loadedSettings.telegramToken,
-              telegramChatId: remoteSettings.telegramChatId ?? loadedSettings.telegramChatId,
-              lowThreshold: remoteSettings.lowThreshold !== undefined ? remoteSettings.lowThreshold : loadedSettings.lowThreshold,
-              telegramEnabled: remoteSettings.telegramEnabled !== undefined ? remoteSettings.telegramEnabled : loadedSettings.telegramEnabled,
-              theme: remoteSettings.theme ?? loadedSettings.theme,
-              supabaseUrl: remoteSettings.supabaseUrl || loadedSettings.supabaseUrl,
-              supabaseAnonKey: remoteSettings.supabaseAnonKey || loadedSettings.supabaseAnonKey
-            };
-            saveLocalSettings(loadedSettings);
-            setSettings(loadedSettings);
-          }
-        } catch (settingsErr) {
-          console.warn('Failed to fetch remote settings during manual refresh:', settingsErr);
-        }
-      }
-      
-      let localMutations = loadLocalMutations();
-      const uniqueLocal = deduplicateMutations(localMutations);
-      if (uniqueLocal.length !== localMutations.length) {
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-        localMutations = uniqueLocal;
-      }
-      
-      if (loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey) {
-        try {
-          await cleanSupabaseDuplicates(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
-        } catch (cleanErr) {
-          console.warn('Failed to clean Supabase duplicates on manual refresh:', cleanErr);
-        }
-        
-        if (localMutations.length > 0) {
-          try {
-            await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations);
-          } catch (syncErr) {
-            console.warn('Failed to auto-push local mutations on manual refresh:', syncErr);
-          }
-        }
-        
-        const loadedMutations = await loadSupabaseMutations(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey);
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
-        setMutations(loadedMutations);
-        showBanner('success', 'Data berhasil diperbarui dari Supabase!');
-      } else {
-        setMutations(localMutations);
-        showBanner('success', 'Data offline lokal berhasil diperbarui!');
-      }
-    } catch (err: any) {
-      console.error('Error refreshing data:', err);
-      showBanner('error', 'Gagal memperbarui data: ' + (err.message || err));
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleSaveSupabaseConfigOnLogin = () => {
-    if (!tempSupabaseUrl || !tempSupabaseAnonKey) {
-      showBanner('error', 'URL dan Anon Key tidak boleh kosong!');
-      return;
-    }
-    
-    const currentSettings = loadLocalSettings();
-    const updated = {
-      ...currentSettings,
-      supabaseUrl: tempSupabaseUrl.trim(),
-      supabaseAnonKey: tempSupabaseAnonKey.trim(),
-    };
-    saveLocalSettings(updated);
-    setSettings(updated);
-    showBanner('success', 'Koneksi Supabase berhasil disimpan! Silakan lakukan login atau pendaftaran.');
-    setShowConfigInput(false);
-    
-    setTimeout(() => {
-      initAuthListener();
-    }, 100);
-  };
-
-  const handleLogin = async (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    if (!authEmail || !authPassword) {
-      showBanner('error', 'Email dan password harus diisi.');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const client = getSupabaseClient();
-      if (!client) {
-        setShowConfigInput(true);
-        throw new Error('Supabase belum terhubung. Konfigurasikan URL & Anon Key di bawah.');
-      }
-      
-      const result = await signInWithEmail(authEmail.trim(), authPassword);
-      setUser(result.user);
-      setToken(result.token);
-      
-      if (!result.user.email || result.user.email.toLowerCase() !== 'haris443@gmail.com') {
-        setIsAdminRestricted(true);
-        setLoading(false);
-        return;
-      }
-      
-      setIsAdminRestricted(false);
-      await loadAppConfigAndData();
-      showBanner('success', `Selamat datang kembali, ${result.user.displayName}!`);
-    } catch (err: any) {
-      console.error('Sign-in failed:', err);
-      showBanner('error', err.message || 'Login gagal. Silakan periksa kembali email & password Anda.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e?: FormEvent) => {
-    if (e) e.preventDefault();
-    if (!authEmail || !authPassword) {
-      showBanner('error', 'Email dan password harus diisi.');
-      return;
-    }
-    if (authPassword.length < 6) {
-      showBanner('error', 'Password minimal harus 6 karakter.');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const client = getSupabaseClient();
-      if (!client) {
-        setShowConfigInput(true);
-        throw new Error('Supabase belum terhubung. Konfigurasikan URL & Anon Key di bawah.');
-      }
-      
-      await signUpWithEmail(authEmail.trim(), authPassword);
-      showBanner('success', 'Registrasi sukses! Silakan cek email masuk/spam untuk verifikasi, atau coba masuk.');
-      setAuthMode('login');
-    } catch (err: any) {
-      console.error('Registration failed:', err);
-      showBanner('error', err.message || 'Registrasi gagal. Pastikan format email benar.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const client = getSupabaseClient();
-      if (!client) {
-        setShowConfigInput(true);
-        throw new Error('Supabase belum terhubung. Konfigurasikan URL & Anon Key di bawah.');
-      }
-      await signInWithGoogle();
-    } catch (err: any) {
-      console.error('Google sign-in error:', err);
-      showBanner('error', err.message || 'Gagal login menggunakan Google.');
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    setLoading(true);
-    try {
-      await logoutSupabase();
-      setUser(null);
-      setToken(null);
-      setMutations([]);
-      setSettings(loadLocalSettings());
-      setIsAdminRestricted(false);
-      setActiveTab('dashboard');
-      showBanner('success', 'Anda telah berhasil keluar.');
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ✅ FIX: handleAddMutation - retroaktif akurat + Telegram fix
   const handleAddMutation = async (newRecord: {
@@ -783,179 +548,7 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-800">
         <Loader2 className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
         <h2 className="text-lg font-bold font-display tracking-wide">Memuat Token.ku...</h2>
-        <p className="text-xs text-slate-400 mt-1">Menginisialisasi sistem keamanan & koneksi cloud</p>
-      </div>
-    );
-  }
-
-  if (isAdminRestricted) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-slate-800">
-        <div className="max-w-md w-full bg-white border border-rose-100 rounded-2xl shadow-xl p-8 text-center space-y-6">
-          <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
-            <ShieldAlert className="h-10 w-10" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-extrabold font-display tracking-tight text-slate-900">Akses Ditolak (Locked)</h2>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Sistem autentikasi Token.ku dikunci khusus hanya untuk akun admin pribadi pemilik aplikasi. Anda masuk dengan email:
-            </p>
-            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-mono text-xs font-semibold text-slate-700">
-              {user?.email}
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-md"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Keluar & Ganti Akun</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || !token) {
-    const isSupabaseConfigured = !!getSupabaseClient();
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 text-slate-800 dark:text-slate-100 transition-colors duration-300">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
-          <div className="bg-indigo-600 p-8 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-indigo-800 opacity-90" />
-            <div className="relative z-10 space-y-2">
-              <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-md">
-                <Battery className="h-7 w-7 text-white" />
-              </div>
-              <h1 className="text-3xl font-extrabold tracking-tight font-display">Token.ku</h1>
-              <p className="text-xs text-indigo-100 uppercase tracking-widest font-semibold">Autentikasi Supabase Cloud</p>
-            </div>
-          </div>
-          <div className="p-6 sm:p-8 space-y-6">
-            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/50 dark:border-slate-800/80">
-              <button
-                type="button"
-                onClick={() => setAuthMode('login')}
-                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  authMode === 'login'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
-              >
-                Masuk
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode('register')}
-                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  authMode === 'register'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                }`}
-              >
-                Daftar Baru
-              </button>
-            </div>
-            
-            {!isSupabaseConfigured && (
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900 text-amber-800 dark:text-amber-200 rounded-2xl text-xs space-y-2">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
-                  <span className="font-bold">Supabase belum terhubung!</span>
-                </div>
-                <p className="leading-relaxed">Silakan masukkan URL & Anon Key di bagian "Konfigurasi Supabase" di bawah terlebih dahulu agar sistem registrasi dan login dapat berfungsi.</p>
-              </div>
-            )}
-            
-            <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Alamat Email</label>
-                <input
-                  type="email"
-                  required
-                  value={authEmail}
-                  onChange={(e) => setAuthEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-950/30 text-sm outline-none transition-all placeholder:text-slate-400 dark:text-slate-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={authPassword}
-                  onChange={(e) => setAuthPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-950/30 text-sm outline-none transition-all placeholder:text-slate-400 dark:text-slate-200"
-                />
-                {authMode === 'register' && (
-                  <span className="text-[10px] text-slate-400 mt-1 block">Minimal 6 karakter</span>
-                )}
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-md shadow-indigo-100 dark:shadow-none flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : authMode === 'login' ? (
-                  'Masuk Sekarang'
-                ) : (
-                  'Daftar Akun Baru'
-                )}
-              </button>
-            </form>
-            
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-              <button
-                type="button"
-                onClick={() => setShowConfigInput(!showConfigInput)}
-                className="w-full flex items-center justify-between text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer py-1"
-              >
-                <span className="flex items-center gap-1.5">
-                  <SettingsIcon className="h-4 w-4" />
-                  Konfigurasi URL & Anon Key Supabase
-                </span>
-                <span>{showConfigInput ? '▲ Sembunyikan' : '▼ Tampilkan'}</span>
-              </button>
-              {showConfigInput && (
-                <div className="mt-4 space-y-4 p-4 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-100 dark:border-slate-850">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supabase URL</label>
-                      <input
-                        type="url"
-                        value={tempSupabaseUrl}
-                        onChange={(e) => setTempSupabaseUrl(e.target.value)}
-                        placeholder="https://xxxxxx.supabase.co"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs outline-none focus:border-indigo-500 placeholder:text-slate-450 text-slate-700 dark:text-slate-300"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Supabase Anon Key</label>
-                      <textarea
-                        rows={2}
-                        value={tempSupabaseAnonKey}
-                        onChange={(e) => setTempSupabaseAnonKey(e.target.value)}
-                        placeholder="eyJhbGciOi..."
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs outline-none focus:border-indigo-500 placeholder:text-slate-450 text-slate-700 dark:text-slate-300 font-mono resize-none"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSaveSupabaseConfigOnLogin}
-                      className="w-full py-2 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      Simpan Koneksi Supabase
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <p className="text-xs text-slate-400 mt-1">Menginisialisasi sistem...</p>
       </div>
     );
   }
@@ -1005,17 +598,65 @@ export default function App() {
                   </span>
                 )}
               </h1>
-              <div className="text-[10px] font-medium tracking-wide flex items-center gap-1.5">
-                <span className={`h-2 w-2 rounded-full animate-pulse ${
-                  isOnline ? 'bg-emerald-500' : 'bg-amber-500'
-                }`} />
-                <span className="text-slate-400 dark:text-slate-500">
-                  {isOnline ? 'Supabase' : 'Mode Offline'}
-                </span>
-              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              title="Dashboard"
+              className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center active:scale-95 ${
+                activeTab === 'dashboard' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setActiveTab('input')}
+              title="Input"
+              className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center active:scale-95 ${
+                activeTab === 'input' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setActiveTab('prediction')}
+              title="Prediksi"
+              className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center active:scale-95 ${
+                activeTab === 'prediction' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <TrendingUp className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setActiveTab('history')}
+              title="Riwayat"
+              className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center active:scale-95 ${
+                activeTab === 'history' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <History className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              title="Pengaturan"
+              className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center active:scale-95 ${
+                activeTab === 'settings' 
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' 
+                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <SettingsIcon className={`h-5 w-5 transition-transform duration-300 ${activeTab === 'settings' ? 'rotate-90' : 'hover:rotate-45'}`} />
+            </button>
+            <div className="w-px h-5 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
             <button
               onClick={toggleTheme}
               title={settings?.theme === 'dark' ? "Ubah ke Mode Terang" : "Ubah ke Mode Gelap"}
@@ -1027,13 +668,12 @@ export default function App() {
                 <Moon className="h-5 w-5 text-indigo-500 transition-transform hover:-rotate-12 duration-300" />
               )}
             </button>
-            <button
-              onClick={handleLogout}
-              title="Keluar dari akun"
-              className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 rounded-xl transition-colors cursor-pointer"
+            <div
+              title={isOnline ? (settings?.supabaseUrl ? 'Supabase Terhubung' : 'Online (Tanpa Supabase)') : 'Mode Offline'}
+              className="p-2.5 flex items-center justify-center"
             >
-              <LogOut className="h-5 w-5" />
-            </button>
+              <Database className={`h-5 w-5 ${settings?.supabaseUrl ? (isOnline ? 'text-emerald-500' : 'text-amber-500') : 'text-slate-300 dark:text-slate-600'}`} />
+            </div>
           </div>
         </div>
       </header>
@@ -1065,66 +705,6 @@ export default function App() {
           </div>
         )}
         
-        <div className="sticky top-20 z-40 w-full max-w-xs sm:max-w-md mx-auto my-2">
-          <div className="flex items-center justify-around gap-1 p-1.5 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/60 rounded-[22px] shadow-lg shadow-slate-900/5 dark:shadow-black/30">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-              title="Dashboard"
-            >
-              <LayoutDashboard className="h-5 w-5 shrink-0" />
-            </button>
-            <button
-              onClick={() => setActiveTab('input')}
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                activeTab === 'input'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-              title="Input"
-            >
-              <Plus className="h-5 w-5 shrink-0" />
-            </button>
-            <button
-              onClick={() => setActiveTab('prediction')}
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                activeTab === 'prediction'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-              title="Prediksi"
-            >
-              <TrendingUp className="h-5 w-5 shrink-0" />
-            </button>
-            <button
-              onClick={() => setActiveTab('history')}
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                activeTab === 'history'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-              title="Riwayat"
-            >
-              <History className="h-5 w-5 shrink-0" />
-            </button>
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`flex-1 flex items-center justify-center py-3 px-4 rounded-[16px] transition-all duration-200 active:scale-95 cursor-pointer ${
-                activeTab === 'settings'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-              title="Seting"
-            >
-              <SettingsIcon className="h-5 w-5 shrink-0" />
-            </button>
-          </div>
-        </div>
-        
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -1140,8 +720,6 @@ export default function App() {
                 lowThreshold={settings?.lowThreshold || 15.0} 
                 kwhTariff={settings?.kwhTariff || 1444.7} 
                 activeTab="dashboard"
-                onRefresh={handleRefreshDashboard}
-                isRefreshing={isRefreshing}
               />
             )}
             {activeTab === 'prediction' && (
@@ -1150,8 +728,6 @@ export default function App() {
                 lowThreshold={settings?.lowThreshold || 15.0} 
                 kwhTariff={settings?.kwhTariff || 1444.7} 
                 activeTab="prediction"
-                onRefresh={handleRefreshDashboard}
-                isRefreshing={isRefreshing}
               />
             )}
             {activeTab === 'input' && (
@@ -1184,21 +760,8 @@ export default function App() {
       </main>
       
       <footer className="mt-auto py-6 px-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-400 dark:text-slate-500 transition-colors duration-300">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-5xl mx-auto flex flex-col items-center justify-center gap-3">
           <p>© {new Date().getFullYear()} Token.ku.</p>
-          <div className="flex items-center gap-4">
-            {settings?.supabaseUrl ? (
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                {isOnline ? 'Supabase Cloud' : 'Mode Offline'}
-              </span>
-            ) : (
-              <span className="text-amber-600 dark:text-amber-500 font-semibold flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                Mode Lokal (Offline)
-              </span>
-            )}
-          </div>
         </div>
       </footer>
       
