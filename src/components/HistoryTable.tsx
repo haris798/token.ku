@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MutationRecord } from '../types';
-import { Clock, Calendar, MessageSquare, ChevronLeft, ChevronRight, Zap, Trash2 } from 'lucide-react';
+import { Clock, Calendar, ChevronLeft, ChevronRight, Zap, Trash2 } from 'lucide-react';
 
 interface HistoryTableProps {
   mutations: MutationRecord[];
@@ -71,7 +71,7 @@ export default function HistoryTable({ mutations, onDelete, onCleanDuplicates, i
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">Pemakaian otomatis terekam dari sisa kWh meter manual</p>
         </div>
-        <span className="text-[10px] font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 px-2.5 py-1 rounded-full uppercase">
+        <span className="text-[10px] font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 px-2.5 py-1 rounded-full capitalize">
           Supabase Active
         </span>
       </div>
@@ -105,7 +105,7 @@ export default function HistoryTable({ mutations, onDelete, onCleanDuplicates, i
           {/* Desktop Table View */}
           <div className="overflow-x-auto hidden sm:block">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/50 dark:bg-slate-950/40 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+              <thead className="bg-slate-50/50 dark:bg-slate-950/40 text-xs font-bold text-slate-500 dark:text-slate-400 capitalize tracking-wider border-b border-slate-100 dark:border-slate-800">
                 <tr>
                   <th className="px-6 py-3.5">Tanggal & Waktu</th>
                   <th className="px-6 py-3.5">Sisa kWh Meter</th>

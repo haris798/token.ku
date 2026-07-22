@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { loadLocalSettings, saveLocalSettings } from './db';
+import { loadLocalSettings } from './db';
 
 let supabaseInstance: SupabaseClient | null = null;
 let currentUrl: string | null = null;

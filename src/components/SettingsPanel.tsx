@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { sendTelegramNotification } from '../lib/telegram';
 import { saveSupabaseSettings, loadSupabaseMutations, loadSupabaseSettings } from '../lib/db';
-import { Settings, Save, Send, AlertCircle, CheckCircle2, Sun, Moon, Database, Loader2, Cloud, Copy, ExternalLink, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Save, Send, AlertCircle, CheckCircle2, Database, Loader2, Copy, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -24,7 +24,6 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
 
   const [activeSubTab, setActiveSubTab] = useState<'basic' | 'telegram' | 'supabase' | 'room'>('basic');
   const [showSql, setShowSql] = useState(false);
-  const [showMigrationSql, setShowMigrationSql] = useState(false);
 
   // Sync local inputs when parent settings change asynchronously
   useEffect(() => {
@@ -115,23 +114,6 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
     }
   };
 
-  const handleThemeToggle = async (newTheme: 'light' | 'dark') => {
-    setTheme(newTheme);
-    try {
-      await onSave({
-        telegramToken: telegramToken.trim(),
-        telegramChatId: telegramChatId.trim(),
-        lowThreshold: parseFloat(lowThreshold.toString()) || 15.0,
-        kwhTariff: parseFloat(kwhTariff.toString()) || 1444.7,
-        telegramEnabled,
-        theme: newTheme,
-        supabaseUrl: supabaseUrl.trim(),
-        supabaseAnonKey: supabaseAnonKey.trim()
-      }, true);
-    } catch (err) {
-      console.error('Failed to auto-save theme change:', err);
-    }
-  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,7 +289,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <button
             type="button"
             onClick={() => setActiveSubTab('basic')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'basic'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -319,7 +301,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <button
             type="button"
             onClick={() => setActiveSubTab('telegram')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'telegram'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -331,7 +313,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <button
             type="button"
             onClick={() => setActiveSubTab('supabase')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'supabase'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -343,7 +325,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <button
             type="button"
             onClick={() => setActiveSubTab('room')}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeSubTab === 'room'
                 ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
                 : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -358,7 +340,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           <div className="space-y-4">
             {/* Low threshold setting */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
                 Ambang Batas Rendah (kWh)
               </label>
               <div className="relative">
@@ -382,7 +364,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
 
             {/* kwh Tariff setting */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
                 Tarif Listrik (Rp/kWh)
               </label>
               <div className="relative">
@@ -441,7 +423,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
             {/* Telegram parameters */}
             <div className={`space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800 transition-all ${telegramEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
               Telegram Bot Token
             </label>
             <input
@@ -455,7 +437,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
               Telegram Chat ID
             </label>
             <input
@@ -511,7 +493,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
             {/* Supabase Integration Panel */}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
               <div>
-                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider flex items-center gap-1.5">
                   <Database className="h-4 w-4 text-emerald-500" />
                   Integrasi Database Supabase
                 </h4>
@@ -522,7 +504,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 capitalize tracking-wider mb-1">
                     Supabase URL
                   </label>
                   <input
@@ -536,7 +518,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 capitalize tracking-wider mb-1">
                     Supabase Public Anon Key
                   </label>
                   <input
@@ -744,7 +726,7 @@ with check (true);`);
         {activeSubTab === 'room' && (
           <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4 text-slate-700 dark:text-slate-300">
             <div>
-              <h4 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 capitalize tracking-wider flex items-center gap-1.5">
                 <Database className="h-4 w-4 text-blue-500" />
                 Arsitektur Room Database (Capacitor)
               </h4>
@@ -756,8 +738,8 @@ with check (true);`);
             <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-4">
               {/* Status Header */}
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-slate-500 tracking-wide">Status Database</span>
-                <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px] rounded-full uppercase tracking-wider flex items-center gap-1">
+                <span className="text-xs font-bold capitalize text-slate-500 tracking-wide">Status Database</span>
+                <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px] rounded-full capitalize tracking-wider flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping inline-block" />
                   Aktif & Sinkron
                 </span>
@@ -806,7 +788,7 @@ with check (true);`);
             {/* Export & Import Settings Panel */}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider flex items-center gap-1.5">
                   <FileCode className="h-4 w-4 text-indigo-500" />
                   Cadangkan / Impor Pengaturan (JSON)
                 </h4>
@@ -842,7 +824,7 @@ with check (true);`);
             {onSeedSampleData && (
               <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider flex items-center gap-1.5">
                     <Database className="h-4 w-4 text-slate-400" />
                     Data Percobaan (Seeding)
                   </h4>

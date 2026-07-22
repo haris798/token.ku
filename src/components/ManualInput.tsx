@@ -10,13 +10,6 @@ interface ManualInputProps {
 
 export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualInputProps) {
   const [remainingKwhStr, setRemainingKwhStr] = useState('');
-  const [timestamp, setTimestamp] = useState(() => {
-    // Current local time formatted for datetime-local input
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localNow = new Date(now.getTime() - offset * 60 * 1000);
-    return localNow.toISOString().slice(0, 16);
-  });
 
   const remainingKwh = parseFloat(remainingKwhStr);
 
@@ -75,7 +68,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
             <span className="font-bold text-slate-800 dark:text-slate-200">
               {lastRecord.remainingKwh.toFixed(2)} kWh
               <span className="font-normal text-slate-400 dark:text-slate-500 ml-1">
-                ({new Date(lastRecord.timestamp).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })})
+                ({new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(lastRecord.timestamp)).replace(' pukul ', ', ')})
               </span>
             </span>
           </div>
@@ -83,7 +76,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
 
         {/* Input Sisa kWh */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
             Sisa kWh Meter saat ini (kWh) <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
@@ -133,7 +126,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
 
         {/* DateTime Log (Readonly) */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5 flex items-center gap-1">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
             Waktu Pembacaan (ReadOnly)
           </label>

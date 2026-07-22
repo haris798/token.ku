@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { MutationRecord } from '../types';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { Battery, Zap, AlertTriangle, TrendingDown, Calendar, Timer, Filter, Activity, TrendingUp, Sparkles, Clock, CheckCircle, Download, RefreshCw } from 'lucide-react';
+import { Battery, Zap, AlertTriangle, Calendar, Timer, Filter, Activity, TrendingUp, Sparkles, Clock, CheckCircle, Download } from 'lucide-react';
 
 interface DashboardProps {
   mutations: MutationRecord[];
@@ -69,47 +69,6 @@ export default function Dashboard({
     return latest.remainingKwh;
   }, [mutations]);
 
-  const lastMutation = useMemo(() => {
-    if (mutations.length === 0) return 0;
-    const latest = [...mutations].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-    return latest.mutation;
-  }, [mutations]);
-
-  const lastMutationDiff = useMemo(() => {
-    if (sortedMutations.length < 2) return null;
-    const latest = sortedMutations[sortedMutations.length - 1];
-    const previous = sortedMutations[sortedMutations.length - 2];
-    
-    const latestTime = new Date(latest.timestamp).getTime();
-    const previousTime = new Date(previous.timestamp).getTime();
-    const diffMs = Math.abs(latestTime - previousTime);
-    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-    const diffHours = diffMs / (1000 * 60 * 60);
-    
-    const latestVal = Math.abs(latest.mutation);
-    const ratePerDay = diffDays > 0.0001 ? latestVal / diffDays : latestVal;
-    
-    const prevDate = new Date(previous.timestamp).toLocaleDateString('id-ID', { 
-      day: 'numeric', 
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    let intervalText = '';
-    if (diffDays >= 0.1) {
-      intervalText = `${diffDays.toFixed(1)} hari`;
-    } else {
-      intervalText = `${diffHours.toFixed(1)} jam`;
-    }
-    
-    return {
-      ratePerDay,
-      intervalText,
-      prevDate,
-      latestType: latest.mutation >= 0 ? 'topup' : 'consumption',
-    };
-  }, [sortedMutations]);
 
   const isLow = currentKwh <= lowThreshold;
 
@@ -404,11 +363,6 @@ export default function Dashboard({
     return parseFloat((totalConsumption / divisor).toFixed(2));
   }, [sortedMutations]);
 
-  // Estimated days remaining
-  const estimatedDaysRemaining = useMemo(() => {
-    if (currentKwh <= 0 || averageDailyUsage <= 0) return 0;
-    return parseFloat((currentKwh / averageDailyUsage).toFixed(1));
-  }, [currentKwh, averageDailyUsage]);
 
   // Battery percentage for gauge (assuming full meter token typical max is ~250 kWh, customizable)
   const batteryPercentage = Math.min(100, Math.max(0, (currentKwh / 200) * 100));
@@ -561,7 +515,7 @@ export default function Dashboard({
             <div>
               <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5 flex-wrap">
                 Ringkasan Konsumsi Bulan Ini
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full capitalize tracking-wider">
                   {statsThisMonth.monthLabel}
                 </span>
               </h3>
@@ -573,13 +527,13 @@ export default function Dashboard({
           
           <div className="grid grid-cols-2 gap-3.5 sm:flex sm:items-center sm:gap-4.5 w-full sm:w-auto">
             <div className="bg-white/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-indigo-100/45 dark:border-indigo-900/30 text-center sm:text-left min-w-[125px] flex-1 sm:flex-none">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider block">Total Konsumsi</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold capitalize tracking-wider block">Total Konsumsi</span>
               <span className="text-xl font-black text-indigo-600 dark:text-indigo-400 block mt-0.5">
                 {statsThisMonth.total.toFixed(2)} <span className="text-xs font-bold text-slate-500 dark:text-slate-400">kWh</span>
               </span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-indigo-100/45 dark:border-indigo-900/30 text-center sm:text-left min-w-[145px] flex-1 sm:flex-none">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider block">Estimasi Biaya</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold capitalize tracking-wider block">Estimasi Biaya</span>
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 block mt-0.5">
                 {formatRupiah(statsThisMonth.total * kwhTariff)}
               </span>
@@ -598,7 +552,7 @@ export default function Dashboard({
         } md:col-span-2 shadow-sm`}>
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-xs font-semibold tracking-wider uppercase opacity-85">
+              <span className="text-xs font-semibold tracking-wider capitalize opacity-85">
                 Sisa kWh Meter
               </span>
               <div className="text-4xl font-extrabold tracking-tight mt-1 flex items-baseline">
@@ -636,12 +590,12 @@ export default function Dashboard({
           )}
         </div>
 
-        {/* Card: Rata-rata Penggunaan Harian */}
+        {/* Card: Rata-rata Penggunaan */}
         <div className="p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col justify-between md:col-span-2 transition-all hover:shadow-md text-slate-800 dark:text-slate-100">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <span className="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400">
-                Rata-rata Penggunaan Harian
+              <span className="text-xs font-semibold tracking-wider capitalize text-slate-500 dark:text-slate-400">
+                Rata-rata Penggunaan
               </span>
               <div className="text-4xl font-extrabold tracking-tight mt-1 flex items-baseline">
                 {overallAverageUsage.toFixed(2)}
@@ -680,7 +634,7 @@ export default function Dashboard({
               <div>
                 <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5">
                   Proyeksi & Prediksi Akhir Bulan
-                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full uppercase">
+                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full capitalize">
                     Estimasi Cerdas
                   </span>
                 </h3>
@@ -691,7 +645,7 @@ export default function Dashboard({
             </div>
             
             <div className="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-0 bg-slate-50 dark:bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800/60">
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Tren Harian</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold capitalize tracking-wider">Tren Harian</span>
               <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{endOfMonthPrediction.dailyTrend.toFixed(2)} kWh/hari</span>
             </div>
           </div>
@@ -746,7 +700,7 @@ export default function Dashboard({
               {endOfMonthPrediction.willRunOut ? (
                 <div className="p-4 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex flex-col h-full justify-between gap-3">
                   <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-extrabold text-xs tracking-wide uppercase">
+                    <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-extrabold text-xs tracking-wide capitalize">
                       <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0 animate-pulse" />
                       <span>Sisa Token Tidak Cukup!</span>
                     </div>
@@ -756,7 +710,7 @@ export default function Dashboard({
                   </div>
                   
                   <div className="bg-white/85 dark:bg-slate-950/80 p-3 rounded-xl border border-rose-100 dark:border-rose-900/20 text-center space-y-1">
-                    <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                    <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-widest flex items-center justify-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
                       Estimasi Tanggal Habis
                     </div>
@@ -775,7 +729,7 @@ export default function Dashboard({
               ) : (
                 <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl flex flex-col h-full justify-between gap-3">
                   <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs tracking-wide uppercase">
+                    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs tracking-wide capitalize">
                       <CheckCircle className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
                       <span>Saldo Token Aman!</span>
                     </div>
@@ -785,7 +739,7 @@ export default function Dashboard({
                   </div>
                   
                   <div className="bg-white/85 dark:bg-slate-950/80 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/20 text-center space-y-1">
-                    <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                    <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-widest flex items-center justify-center gap-1">
                       <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
                       Estimasi Sisa Cadangan
                     </div>
@@ -817,7 +771,7 @@ export default function Dashboard({
             <div>
               <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5">
                 Prediksi Sisa Hari & Deplesi Saldo
-                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full uppercase">
+                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full capitalize">
                   Pola 30 Hari Terakhir
                 </span>
               </h3>
@@ -828,7 +782,7 @@ export default function Dashboard({
           </div>
           
           <div className="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-0 bg-slate-50 dark:bg-slate-950/40 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800/60">
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Rerata 30 Hari</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold capitalize tracking-wider">Rerata 30 Hari</span>
             <span className="text-sm font-black text-amber-600 dark:text-amber-400">{averageDailyUsage30Days.toFixed(2)} kWh/hari</span>
           </div>
         </div>
@@ -843,7 +797,7 @@ export default function Dashboard({
               
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800/60 text-center">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Total Terpakai</div>
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize">Total Terpakai</div>
                   <div className="text-sm font-extrabold text-slate-800 dark:text-slate-200 mt-1">
                     {prediction30Days.total30DaysConsumption.toFixed(1)} kWh
                   </div>
@@ -853,7 +807,7 @@ export default function Dashboard({
                 </div>
 
                 <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800/60 text-center">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Frekuensi Catat</div>
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize">Frekuensi Catat</div>
                   <div className="text-sm font-extrabold text-slate-800 dark:text-slate-200 mt-1">
                     {prediction30Days.recordsCount} Kali
                   </div>
@@ -863,7 +817,7 @@ export default function Dashboard({
                 </div>
 
                 <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800/60 text-center">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Sisa Saldo</div>
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize">Sisa Saldo</div>
                   <div className="text-sm font-extrabold text-slate-800 dark:text-slate-200 mt-1">
                     {currentKwh.toFixed(1)} kWh
                   </div>
@@ -881,7 +835,7 @@ export default function Dashboard({
             {/* Recommendations / Top up Simulator */}
             {averageDailyUsage30Days > 0 && (
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">Simulasi Durasi Tambahan Top Up:</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-wider block mb-2">Simulasi Durasi Tambahan Top Up:</span>
                 <div className="grid grid-cols-3 gap-2">
                   <div className="px-2 py-1.5 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/40 dark:border-emerald-900/10 rounded-lg text-center">
                     <span className="block text-[10px] font-bold text-emerald-800 dark:text-emerald-300">Rp 50.000</span>
@@ -908,7 +862,7 @@ export default function Dashboard({
             {prediction30Days.status === 'critical' ? (
               <div className="p-4 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex flex-col h-full justify-between gap-3">
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-extrabold text-xs tracking-wide uppercase">
+                  <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 font-extrabold text-xs tracking-wide capitalize">
                     <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0 animate-pulse" />
                     <span>Kehabisan Sangat Dekat!</span>
                   </div>
@@ -918,7 +872,7 @@ export default function Dashboard({
                 </div>
                 
                 <div className="bg-white/85 dark:bg-slate-950/80 p-3.5 rounded-xl border border-rose-100 dark:border-rose-900/20 text-center space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-widest flex items-center justify-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     Perkiraan Tanggal Habis
                   </div>
@@ -937,7 +891,7 @@ export default function Dashboard({
             ) : prediction30Days.status === 'warning' ? (
               <div className="p-4 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl flex flex-col h-full justify-between gap-3">
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-extrabold text-xs tracking-wide uppercase">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-extrabold text-xs tracking-wide capitalize">
                     <AlertTriangle className="h-4.5 w-4.5 text-amber-500 shrink-0" />
                     <span>Waspada Batas Saldo!</span>
                   </div>
@@ -947,7 +901,7 @@ export default function Dashboard({
                 </div>
                 
                 <div className="bg-white/85 dark:bg-slate-950/80 p-3.5 rounded-xl border border-amber-100 dark:border-amber-900/20 text-center space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-widest flex items-center justify-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     Perkiraan Tanggal Habis
                   </div>
@@ -966,7 +920,7 @@ export default function Dashboard({
             ) : prediction30Days.status === 'safe' ? (
               <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl flex flex-col h-full justify-between gap-3">
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs tracking-wide uppercase">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs tracking-wide capitalize">
                     <CheckCircle className="h-4.5 w-4.5 text-emerald-500 shrink-0" />
                     <span>Cadangan Saldo Sangat Aman</span>
                   </div>
@@ -976,7 +930,7 @@ export default function Dashboard({
                 </div>
                 
                 <div className="bg-white/85 dark:bg-slate-950/80 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/20 text-center space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-widest flex items-center justify-center gap-1">
                     <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
                     Perkiraan Tanggal Habis
                   </div>
@@ -1028,12 +982,12 @@ export default function Dashboard({
             <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-xl border border-slate-100 dark:border-slate-800/50 self-start lg:self-center">
               <div className="flex items-center gap-1 px-1">
                 <Filter className="h-3.5 w-3.5 text-indigo-500" />
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden xs:inline">Filter</span>
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 capitalize tracking-wider hidden xs:inline">Filter</span>
               </div>
               <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden xs:block" />
               
               <div className="flex flex-col text-right">
-                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider leading-none mb-1">
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium capitalize tracking-wider leading-none mb-1">
                   {selectedMonth === 'all' ? 'Total Riwayat' : 'Total Konsumsi'}
                 </span>
                 <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400" title={formatRupiah(selectedMonthStats.total * kwhTariff)}>
@@ -1042,7 +996,7 @@ export default function Dashboard({
               </div>
               <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
               <div className="flex flex-col text-right">
-                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider leading-none mb-1">Rata-rata</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium capitalize tracking-wider leading-none mb-1">Rata-rata</span>
                 <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400" title={formatRupiah(selectedMonthStats.average * kwhTariff)}>
                   {selectedMonthStats.average.toFixed(2)} kWh/hari
                 </span>
@@ -1211,7 +1165,7 @@ export default function Dashboard({
                 </div>
 
                 <div className="bg-slate-50/50 dark:bg-slate-950/20 rounded-xl p-3 border border-slate-100 dark:border-slate-800/40">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">Riwayat Detail Bulanan & Rupiah</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 capitalize tracking-wider block mb-2">Riwayat Detail Bulanan & Rupiah</span>
                   <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                     {[...monthlyData].reverse().map((item, index) => (
                       <div key={index} className="flex justify-between items-center text-xs py-1 px-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/50">
