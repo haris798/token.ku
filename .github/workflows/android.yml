@@ -38,6 +38,10 @@ jobs:
 
       - name: Sync Capacitor Android
         run: |
+          npm install @capacitor/android
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
           npx cap sync android || npx cap sync
 
       - name: Build Android App (APK Debug)
