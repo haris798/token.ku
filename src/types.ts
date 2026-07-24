@@ -16,4 +16,6 @@ export interface AppSettings {
   theme?: 'light' | 'dark';
   supabaseUrl?: string;
   supabaseAnonKey?: string;
+  supabaseEmail?: string;
+  supabasePassword?: string;
 }

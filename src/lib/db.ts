@@ -1,5 +1,6 @@
 import { MutationRecord, AppSettings } from '../types';
 import { getRoomDatabase } from './roomDb';
+import { ensureSupabaseSession } from './supabaseAuth';
 
 export const SAMPLE_LOGS: MutationRecord[] = [
   { id: "sample-1", timestamp: "2026-06-06T00:00:00Z", remainingKwh: 194.93, mutation: 0, type: "initial", notes: "Saldo Awal" },
@@ -31,7 +32,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   telegramEnabled: true,
   theme: 'dark',
   supabaseUrl: ((import.meta as any).env.VITE_SUPABASE_URL as string) || '',
-  supabaseAnonKey: ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || ''
+  supabaseAnonKey: ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || '',
+  supabaseEmail: ((import.meta as any).env.VITE_SUPABASE_USER as string) || '',
+  supabasePassword: ((import.meta as any).env.VITE_SUPABASE_PASS as string) || ''
 };
 
 // --- Settings Operations ---
@@ -57,6 +60,8 @@ export function loadLocalSettings(): AppSettings {
         telegramChatId: parsed.telegramChatId || ((import.meta as any).env.VITE_TELEGRAM_CHAT_ID as string) || DEFAULT_SETTINGS.telegramChatId,
         supabaseUrl: parsed.supabaseUrl || ((import.meta as any).env.VITE_SUPABASE_URL as string) || DEFAULT_SETTINGS.supabaseUrl,
         supabaseAnonKey: parsed.supabaseAnonKey || ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || DEFAULT_SETTINGS.supabaseAnonKey,
+        supabaseEmail: parsed.supabaseEmail || ((import.meta as any).env.VITE_SUPABASE_USER as string) || DEFAULT_SETTINGS.supabaseEmail,
+        supabasePassword: parsed.supabasePassword || ((import.meta as any).env.VITE_SUPABASE_PASS as string) || DEFAULT_SETTINGS.supabasePassword,
         kwhTariff: parsed.kwhTariff !== undefined && parsed.kwhTariff !== null ? parseFloat(parsed.kwhTariff) : DEFAULT_SETTINGS.kwhTariff,
       };
     } catch (e) {
@@ -232,13 +237,23 @@ export async function syncLocalStorageWithRoomDb(): Promise<void> {
 
 // --- Supabase Database Operations (Direct Rest API) ---
 
+export async function getSupabaseHeaders(key: string, prefer?: string): Promise<Record<string, string>> {
+  const token = await ensureSupabaseSession();
+  const authHeader = token ? `Bearer ${token}` : `Bearer ${key}`;
+  const headers: Record<string, string> = {
+    'apikey': key,
+    'Authorization': authHeader,
+    'Content-Type': 'application/json'
+  };
+  if (prefer) headers['Prefer'] = prefer;
+  return headers;
+}
+
 export async function loadSupabaseMutations(url: string, key: string): Promise<MutationRecord[]> {
   const cleanUrl = url.replace(/\/$/, '');
+  const headers = await getSupabaseHeaders(key);
   const response = await fetch(`${cleanUrl}/rest/v1/token_mutations?select=*`, {
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-    }
+    headers
   });
 
   if (!response.ok) {
@@ -271,14 +286,10 @@ export async function saveSupabaseMutation(
   record: Omit<MutationRecord, 'id'>
 ): Promise<void> {
   const cleanUrl = url.replace(/\/$/, '');
+  const headers = await getSupabaseHeaders(key, 'return=minimal');
   const response = await fetch(`${cleanUrl}/rest/v1/token_mutations`, {
     method: 'POST',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
+    headers,
     body: JSON.stringify({
       timestamp: record.timestamp,
       remaining_kwh: record.remainingKwh,
@@ -300,12 +311,10 @@ export async function deleteSupabaseMutation(
   timestamp: string
 ): Promise<void> {
   const cleanUrl = url.replace(/\/$/, '');
+  const headers = await getSupabaseHeaders(key);
   const response = await fetch(`${cleanUrl}/rest/v1/token_mutations?timestamp=eq.${encodeURIComponent(timestamp)}`, {
     method: 'DELETE',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`
-    }
+    headers
   });
 
   if (!response.ok) {
@@ -357,14 +366,10 @@ export async function mirrorAllToSupabase(
     notes: m.notes || ''
   }));
 
+  const headers = await getSupabaseHeaders(key, 'resolution=ignore-duplicates, return=representation');
   const response = await fetch(`${cleanUrl}/rest/v1/token_mutations`, {
     method: 'POST',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=ignore-duplicates, return=representation'
-    },
+    headers,
     body: JSON.stringify(payload)
   });
 
@@ -443,11 +448,9 @@ export async function loadSupabaseSettings(
 ): Promise<Partial<AppSettings> | null> {
   const cleanUrl = url.replace(/\/$/, '');
   try {
+    const headers = await getSupabaseHeaders(key);
     const response = await fetch(`${cleanUrl}/rest/v1/token_settings?id=eq.default&select=*`, {
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-      }
+      headers
     });
 
     if (!response.ok) {
@@ -501,14 +504,10 @@ export async function saveSupabaseSettings(
 
   // 1. Try atomic POST UPSERT with merge-duplicates header (standard Supabase PostgREST)
   try {
+    const headers = await getSupabaseHeaders(key, 'resolution=merge-duplicates,return=minimal');
     const response = await fetch(`${cleanUrl}/rest/v1/token_settings`, {
       method: 'POST',
-      headers: {
-        'apikey': key,
-        'Authorization': `Bearer ${key}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
+      headers,
       body: JSON.stringify(payload)
     });
 
@@ -524,14 +523,10 @@ export async function saveSupabaseSettings(
       const retryPayload = { ...payload };
       delete retryPayload.kwh_tariff;
 
+      const retryHeaders = await getSupabaseHeaders(key, 'resolution=merge-duplicates,return=minimal');
       const retryResp = await fetch(`${cleanUrl}/rest/v1/token_settings`, {
         method: 'POST',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${key}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates,return=minimal'
-        },
+        headers: retryHeaders,
         body: JSON.stringify(retryPayload)
       });
       if (retryResp.ok) {
@@ -543,14 +538,10 @@ export async function saveSupabaseSettings(
   }
 
   // 2. Fallback PUT to id=eq.default (inserts if missing, replaces if exists)
+  const putHeaders = await getSupabaseHeaders(key, 'return=minimal');
   const fallbackResponse = await fetch(`${cleanUrl}/rest/v1/token_settings?id=eq.default`, {
     method: 'PUT',
-    headers: {
-      'apikey': key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
+    headers: putHeaders,
     body: JSON.stringify(payload)
   });
 
@@ -566,12 +557,7 @@ export async function saveSupabaseSettings(
 
       const retryFallbackResponse = await fetch(`${cleanUrl}/rest/v1/token_settings?id=eq.default`, {
         method: 'PUT',
-        headers: {
-          'apikey': key,
-          'Authorization': `Bearer ${key}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
+        headers: putHeaders,
         body: JSON.stringify(retryPayload)
       });
       if (retryFallbackResponse.ok) {

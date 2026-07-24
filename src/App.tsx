@@ -593,7 +593,6 @@ export default function App() {
                   </span>
                 )}
               </h1>
-              <span className="text-base font-medium text-slate-500 dark:text-slate-400 mt-1">Asisten monitoring</span>
             </div>
           </div>
 

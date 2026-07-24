@@ -38,6 +38,30 @@ export function getSupabaseClient(): SupabaseClient | null {
   return supabaseInstance;
 }
 
+export async function getSessionToken(): Promise<string | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token || null;
+}
+
+export async function ensureSupabaseSession(): Promise<string | null> {
+  let token = await getSessionToken();
+  if (token) return token;
+
+  const settings = loadLocalSettings();
+  if (settings.supabaseEmail && settings.supabasePassword) {
+    try {
+      const res = await signInWithEmail(settings.supabaseEmail, settings.supabasePassword);
+      return res.token;
+    } catch (e) {
+      console.warn('Auto-login with Supabase Email failed:', e);
+      return null;
+    }
+  }
+  return null;
+}
+
 export interface SupabaseUserMapped {
   email: string;
   displayName: string;

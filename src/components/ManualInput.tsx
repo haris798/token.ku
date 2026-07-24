@@ -55,8 +55,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
           <Zap className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-100">Catat Sisa kWh Baru</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Input meter sisa daya listrik saat ini</p>
+          <h3 className="font-bold text-slate-800 dark:text-slate-100">Catat Sisa kWh Meter</h3>
         </div>
       </div>
 
@@ -74,27 +73,58 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
           </div>
         )}
 
-        {/* Input Sisa kWh */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
-            Sisa kWh Meter saat ini (kWh) <span className="text-rose-500">*</span>
-          </label>
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-end gap-3">
+          {/* DateTime Log (Readonly) */}
+          <div className="flex-1 w-full">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5 flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5 text-slate-400" />
+              Waktu
+            </label>
             <input
-              type="number"
-              step="0.01"
-              required
-              min="0"
-              disabled={isLoading}
-              value={remainingKwhStr}
-              onChange={(e) => setRemainingKwhStr(e.target.value)}
-              placeholder="Contoh: 124.50"
-              className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100/50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl transition-all font-medium text-lg outline-none"
+              type="text"
+              readOnly
+              disabled
+              value={new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 font-medium text-sm outline-none cursor-not-allowed"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
-              kWh
-            </span>
           </div>
+
+          {/* Input Sisa kWh */}
+          <div className="flex-[1.5] w-full">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
+              Sisa kWh <span className="text-rose-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                step="0.01"
+                required
+                min="0"
+                disabled={isLoading}
+                value={remainingKwhStr}
+                onChange={(e) => setRemainingKwhStr(e.target.value)}
+                placeholder="Contoh: 124.50"
+                className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100/50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl transition-all font-medium text-lg outline-none"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
+                kWh
+              </span>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            title="Simpan Pencatatan"
+            disabled={isLoading || remainingKwhStr === ''}
+            className="shrink-0 w-full sm:w-auto px-6 py-3 h-[50px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Save className="h-5 w-5" />
+            )}
+          </button>
         </div>
 
         {/* Real-time Calculation Preview */}
@@ -123,37 +153,6 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
             </div>
           </div>
         )}
-
-        {/* DateTime Log (Readonly) */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5 flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5 text-slate-400" />
-            Waktu Pembacaan (ReadOnly)
-          </label>
-          <input
-            type="text"
-            readOnly
-            disabled
-            value={new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 font-medium text-sm outline-none cursor-not-allowed"
-          />
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading || remainingKwhStr === ''}
-          className="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              <span>Simpan Pencatatan</span>
-            </>
-          )}
-        </button>
       </form>
     </div>
   );

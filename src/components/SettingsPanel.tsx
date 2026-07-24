@@ -21,6 +21,8 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
   const [theme, setTheme] = useState<'light' | 'dark'>(settings.theme || 'dark');
   const [supabaseUrl, setSupabaseUrl] = useState(settings.supabaseUrl || '');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState(settings.supabaseAnonKey || '');
+  const [supabaseEmail, setSupabaseEmail] = useState(settings.supabaseEmail || '');
+  const [supabasePassword, setSupabasePassword] = useState(settings.supabasePassword || '');
 
   const [activeSubTab, setActiveSubTab] = useState<'basic' | 'telegram' | 'supabase' | 'room'>('basic');
   const [showSql, setShowSql] = useState(false);
@@ -35,6 +37,8 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
     setTheme(settings.theme || 'dark');
     setSupabaseUrl(settings.supabaseUrl || '');
     setSupabaseAnonKey(settings.supabaseAnonKey || '');
+    setSupabaseEmail(settings.supabaseEmail || '');
+    setSupabasePassword(settings.supabasePassword || '');
   }, [settings]);
 
   // Instant live preview of selected theme
@@ -86,7 +90,9 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         telegramEnabled,
         theme,
         supabaseUrl: supabaseUrl.trim(),
-        supabaseAnonKey: supabaseAnonKey.trim()
+        supabaseAnonKey: supabaseAnonKey.trim(),
+        supabaseEmail: supabaseEmail.trim(),
+        supabasePassword: supabasePassword.trim()
       };
 
       let settingsSaved = false;
@@ -125,7 +131,9 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
       telegramEnabled,
       theme,
       supabaseUrl: supabaseUrl.trim(),
-      supabaseAnonKey: supabaseAnonKey.trim()
+      supabaseAnonKey: supabaseAnonKey.trim(),
+      supabaseEmail: supabaseEmail.trim(),
+      supabasePassword: supabasePassword.trim()
     });
   };
 
@@ -155,6 +163,8 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         theme,
         supabaseUrl: supabaseUrl.trim(),
         supabaseAnonKey: supabaseAnonKey.trim(),
+        supabaseEmail: supabaseEmail.trim(),
+        supabasePassword: supabasePassword.trim(),
         exportedAt: new Date().toISOString(),
         appName: "Token.ku"
       };
@@ -240,6 +250,8 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         if (parsed.theme === 'light' || parsed.theme === 'dark') setTheme(parsed.theme);
         if (parsed.supabaseUrl !== undefined) setSupabaseUrl(parsed.supabaseUrl);
         if (parsed.supabaseAnonKey !== undefined) setSupabaseAnonKey(parsed.supabaseAnonKey);
+        if (parsed.supabaseEmail !== undefined) setSupabaseEmail(parsed.supabaseEmail);
+        if (parsed.supabasePassword !== undefined) setSupabasePassword(parsed.supabasePassword);
 
         alert('Pengaturan berhasil dimuat dari file JSON! Silakan klik tombol "Simpan Pengaturan" di bagian bawah untuk menyimpan perubahan secara permanen.');
       } catch (err) {
@@ -279,7 +291,6 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-slate-200">Pengaturan Token.ku</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Konfigurasi ambang batas kWh dan integrasi bot Telegram</p>
         </div>
       </div>
 
@@ -337,7 +348,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
         </div>
 
         {activeSubTab === 'basic' && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Low threshold setting */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
@@ -357,9 +368,6 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                   kWh
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Notifikasi Telegram otomatis dikirim saat sisa saldo kWh berada di bawah angka ini.
-              </p>
             </div>
 
             {/* kwh Tariff setting */}
@@ -381,9 +389,6 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                   Rp
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Tarif rupiah per kWh listrik PLN (Contoh standar: 1444.7). Digunakan untuk menghitung nilai rupiah konsumsi harian di Dashboard.
-              </p>
             </div>
           </div>
         )}
@@ -495,7 +500,7 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
               <div>
                 <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider flex items-center gap-1.5">
                   <Database className="h-4 w-4 text-emerald-500" />
-                  Integrasi Database Supabase
+                  Supabase
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
                   Hubungkan data pemakaian Token.ku ke database PostgreSQL kustom Anda di Supabase untuk sinkronisasi sekunder.
@@ -527,6 +532,34 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
                     disabled={isLoading}
                     value={supabaseAnonKey}
                     onChange={(e) => setSupabaseAnonKey(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-xs outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 capitalize tracking-wider mb-1">
+                    Email Auth
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="admin@example.com"
+                    disabled={isLoading}
+                    value={supabaseEmail}
+                    onChange={(e) => setSupabaseEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-xs outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 capitalize tracking-wider mb-1">
+                    Password Auth
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                    value={supabasePassword}
+                    onChange={(e) => setSupabasePassword(e.target.value)}
                     className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-xs outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
                   />
                 </div>
@@ -792,9 +825,6 @@ with check (true);`);
                   <FileCode className="h-4 w-4 text-indigo-500" />
                   Cadangkan / Impor Pengaturan (JSON)
                 </h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                  Cadangkan atau muat kembali semua konfigurasi aplikasi, Bot Telegram, dan integrasi Supabase ke dalam file JSON lokal di perangkat Anda.
-                </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -819,40 +849,6 @@ with check (true);`);
                 </label>
               </div>
             </div>
-
-            {/* Seed Sample Data Section */}
-            {onSeedSampleData && (
-              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
-                <div>
-                  <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider flex items-center gap-1.5">
-                    <Database className="h-4 w-4 text-slate-400" />
-                    Data Percobaan (Seeding)
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                    Impor data log real-time kWh (19 baris riwayat pemakaian & pembelian token listrik) ke penyimpanan lokal browser Anda secara instan.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={seedLoading || isLoading}
-                  onClick={handleSeedData}
-                  className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 text-white dark:text-slate-200 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
-                >
-                  {seedLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Database className="h-4 w-4" />
-                  )}
-                  <span>Impor Data Log & Pengaturan JSON</span>
-                </button>
-                {seedSuccess && (
-                  <div className="p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-lg text-emerald-800 dark:text-emerald-300 text-[11px] font-medium flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>Data contoh sukses diimpor! Silakan beralih ke Dashboard.</span>
-                  </div>
-                )}
-              </div>
-            )}
           </>
         )}
 

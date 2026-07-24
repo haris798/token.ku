@@ -514,14 +514,11 @@ export default function Dashboard({
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5 flex-wrap">
-                Ringkasan Konsumsi Bulan Ini
+                Ringkasan Pemakaian Bulan Ini
                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded-full capitalize tracking-wider">
                   {statsThisMonth.monthLabel}
                 </span>
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Akumulasi pemakaian energi listrik dan estimasi pengeluaran berdasarkan tarif Rp {kwhTariff.toLocaleString('id-ID')}/kWh.
-              </p>
             </div>
           </div>
           
