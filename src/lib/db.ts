@@ -31,10 +31,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   kwhTariff: 1444.7,
   telegramEnabled: true,
   theme: 'dark',
-  supabaseUrl: ((import.meta as any).env.VITE_SUPABASE_URL as string) || '',
-  supabaseAnonKey: ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || '',
-  supabaseEmail: ((import.meta as any).env.VITE_SUPABASE_USER as string) || '',
-  supabasePassword: ((import.meta as any).env.VITE_SUPABASE_PASS as string) || ''
+  supabaseUrl: ((import.meta as any).env.SUPABASE_URL as string) || ((import.meta as any).env.VITE_SUPABASE_URL as string) || '',
+  supabaseAnonKey: ((import.meta as any).env.SUPABASE_KEY as string) || ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || ((import.meta as any).env.VITE_SUPABASE_KEY as string) || '',
+  supabaseEmail: ((import.meta as any).env.SUPABASE_USER as string) || ((import.meta as any).env.VITE_SUPABASE_USER as string) || '',
+  supabasePassword: ((import.meta as any).env.SUPABASE_PASS as string) || ((import.meta as any).env.VITE_SUPABASE_PASS as string) || ''
 };
 
 // --- Settings Operations ---
@@ -58,10 +58,10 @@ export function loadLocalSettings(): AppSettings {
         ...parsed,
         telegramToken: parsed.telegramToken || ((import.meta as any).env.VITE_TELEGRAM_TOKEN as string) || DEFAULT_SETTINGS.telegramToken,
         telegramChatId: parsed.telegramChatId || ((import.meta as any).env.VITE_TELEGRAM_CHAT_ID as string) || DEFAULT_SETTINGS.telegramChatId,
-        supabaseUrl: parsed.supabaseUrl || ((import.meta as any).env.VITE_SUPABASE_URL as string) || DEFAULT_SETTINGS.supabaseUrl,
-        supabaseAnonKey: parsed.supabaseAnonKey || ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || DEFAULT_SETTINGS.supabaseAnonKey,
-        supabaseEmail: parsed.supabaseEmail || ((import.meta as any).env.VITE_SUPABASE_USER as string) || DEFAULT_SETTINGS.supabaseEmail,
-        supabasePassword: parsed.supabasePassword || ((import.meta as any).env.VITE_SUPABASE_PASS as string) || DEFAULT_SETTINGS.supabasePassword,
+        supabaseUrl: parsed.supabaseUrl || ((import.meta as any).env.SUPABASE_URL as string) || ((import.meta as any).env.VITE_SUPABASE_URL as string) || DEFAULT_SETTINGS.supabaseUrl,
+        supabaseAnonKey: parsed.supabaseAnonKey || ((import.meta as any).env.SUPABASE_KEY as string) || ((import.meta as any).env.VITE_SUPABASE_ANON_KEY as string) || ((import.meta as any).env.VITE_SUPABASE_KEY as string) || DEFAULT_SETTINGS.supabaseAnonKey,
+        supabaseEmail: parsed.supabaseEmail || ((import.meta as any).env.SUPABASE_USER as string) || ((import.meta as any).env.VITE_SUPABASE_USER as string) || DEFAULT_SETTINGS.supabaseEmail,
+        supabasePassword: parsed.supabasePassword || ((import.meta as any).env.SUPABASE_PASS as string) || ((import.meta as any).env.VITE_SUPABASE_PASS as string) || DEFAULT_SETTINGS.supabasePassword,
         kwhTariff: parsed.kwhTariff !== undefined && parsed.kwhTariff !== null ? parseFloat(parsed.kwhTariff) : DEFAULT_SETTINGS.kwhTariff,
       };
     } catch (e) {

@@ -10,8 +10,8 @@ const sanitizeInput = (val: string) => val ? val.trim() : '';
 
 export function getSupabaseClient(): SupabaseClient | null {
   const settings = loadLocalSettings();
-  const url = sanitizeInput(settings.supabaseUrl || (import.meta as any).env.VITE_SUPABASE_URL || '');
-  const key = sanitizeInput(settings.supabaseAnonKey || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || '');
+  const url = sanitizeInput(settings.supabaseUrl || (import.meta as any).env.SUPABASE_URL || (import.meta as any).env.VITE_SUPABASE_URL || '');
+  const key = sanitizeInput(settings.supabaseAnonKey || (import.meta as any).env.SUPABASE_KEY || (import.meta as any).env.VITE_SUPABASE_ANON_KEY || (import.meta as any).env.VITE_SUPABASE_KEY || '');
 
   if (!url || !key) {
     return null;
