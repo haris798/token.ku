@@ -113,24 +113,28 @@ export default function App() {
 
   useEffect(() => {
     const initialize = async () => {
-      // 1. Baca data lokal secara sinkron untuk offline-first
-      const loadedSettings = loadLocalSettings();
-      setSettings(loadedSettings);
-      
-      let localMutations = loadLocalMutations();
-      const uniqueLocal = deduplicateMutations(localMutations);
-      if (uniqueLocal.length !== localMutations.length) {
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-        localMutations = uniqueLocal;
-      }
-      setMutations(localMutations);
+      try {
+        // 1. Baca data lokal secara sinkron untuk offline-first
+        const loadedSettings = loadLocalSettings();
+        setSettings(loadedSettings);
+        
+        let localMutations = loadLocalMutations();
+        const uniqueLocal = deduplicateMutations(localMutations);
+        if (uniqueLocal.length !== localMutations.length) {
+          localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
+          localMutations = uniqueLocal;
+        }
+        setMutations(localMutations);
 
-      if (!loadedSettings.supabaseUrl || !loadedSettings.supabaseAnonKey) {
-        setActiveTab('settings');
+        if (!loadedSettings.supabaseUrl || !loadedSettings.supabaseAnonKey) {
+          setActiveTab('settings');
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        // 2. Langsung matikan layar loading agar UI tampil seketika
+        setLoading(false);
       }
-      
-      // 2. Langsung matikan layar loading agar UI tampil seketika
-      setLoading(false);
 
       // 3. Jalankan sinkronisasi cloud di background
       loadAppConfigAndData();
