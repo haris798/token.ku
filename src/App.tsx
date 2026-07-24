@@ -231,6 +231,8 @@ export default function App() {
               telegramChatId: remoteSettings.telegramChatId ?? loadedSettings.telegramChatId,
               lowThreshold: remoteSettings.lowThreshold !== undefined 
                 ? remoteSettings.lowThreshold : loadedSettings.lowThreshold,
+              kwhTariff: remoteSettings.kwhTariff !== undefined 
+                ? remoteSettings.kwhTariff : loadedSettings.kwhTariff,
               telegramEnabled: remoteSettings.telegramEnabled !== undefined 
                 ? remoteSettings.telegramEnabled : loadedSettings.telegramEnabled,
               theme: remoteSettings.theme ?? loadedSettings.theme,
