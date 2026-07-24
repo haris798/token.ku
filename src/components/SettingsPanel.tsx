@@ -7,12 +7,13 @@ import { Settings, Save, Send, AlertCircle, CheckCircle2, Database, Loader2, Cop
 interface SettingsPanelProps {
   settings: AppSettings;
   onSave: (settings: AppSettings, silent?: boolean) => Promise<void>;
+  onAutoSaveLocal?: (settings: AppSettings) => void;
   onSeedSampleData?: () => Promise<void>;
   isLoading: boolean;
   onMirrorAllToSupabase?: (url: string, key: string) => Promise<{ successCount: number; failedCount: number }>;
 }
 
-export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLoading, onMirrorAllToSupabase }: SettingsPanelProps) {
+export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSeedSampleData, isLoading, onMirrorAllToSupabase }: SettingsPanelProps) {
   const [telegramToken, setTelegramToken] = useState(settings.telegramToken);
   const [telegramChatId, setTelegramChatId] = useState(settings.telegramChatId);
   const [lowThreshold, setLowThreshold] = useState(settings.lowThreshold);
@@ -60,6 +61,27 @@ export default function SettingsPanel({ settings, onSave, onSeedSampleData, isLo
       }
     };
   }, [settings.theme]);
+
+  // Auto-save ke local cache setiap kali ada perubahan pada form settings
+  useEffect(() => {
+    if (onAutoSaveLocal) {
+      const timer = setTimeout(() => {
+        onAutoSaveLocal({
+          telegramToken: telegramToken,
+          telegramChatId: telegramChatId,
+          lowThreshold: parseFloat(lowThreshold.toString()) || 15.0,
+          kwhTariff: parseFloat(kwhTariff.toString()) || 1444.7,
+          telegramEnabled,
+          theme,
+          supabaseUrl: supabaseUrl,
+          supabaseAnonKey: supabaseAnonKey,
+          supabaseEmail: supabaseEmail,
+          supabasePassword: supabasePassword
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [telegramToken, telegramChatId, lowThreshold, kwhTariff, telegramEnabled, theme, supabaseUrl, supabaseAnonKey, supabaseEmail, supabasePassword, onAutoSaveLocal]);
   
   const [testLoading, setTestLoading] = useState(false);
   const [testStatus, setTestStatus] = useState<{ success: boolean; msg: string } | null>(null);

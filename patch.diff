@@ -1,0 +1,27 @@
+--- src/components/SettingsPanel.tsx
++++ src/components/SettingsPanel.tsx
+@@ -62,2 +62,21 @@
+   }, [settings.theme]);
+ 
++  // Auto-save ke local cache setiap kali ada perubahan pada form settings
++  useEffect(() => {
++    if (onAutoSaveLocal) {
++      const timer = setTimeout(() => {
++        onAutoSaveLocal({
++          telegramToken: telegramToken,
++          telegramChatId: telegramChatId,
++          lowThreshold: parseFloat(lowThreshold.toString()) || 15.0,
++          kwhTariff: parseFloat(kwhTariff.toString()) || 1444.7,
++          telegramEnabled,
++          theme,
++          supabaseUrl: supabaseUrl,
++          supabaseAnonKey: supabaseAnonKey,
++          supabaseEmail: supabaseEmail,
++          supabasePassword: supabasePassword
++        });
++      }, 500);
++      return () => clearTimeout(timer);
++    }
++  }, [telegramToken, telegramChatId, lowThreshold, kwhTariff, telegramEnabled, theme, supabaseUrl, supabaseAnonKey, supabaseEmail, supabasePassword, onAutoSaveLocal]);
++
+   const [testLoading, setTestLoading] = useState(false);

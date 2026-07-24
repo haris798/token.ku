@@ -614,6 +614,79 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Kartu Ringkasan Bulanan */}
+      <div className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm transition-all hover:shadow-md">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
+                Ringkasan Pengeluaran per Bulan
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Total konsumsi kWh dan estimasi biaya per bulan
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export CSV
+          </button>
+        </div>
+
+        {monthlyData.length > 0 ? (
+          <div className="space-y-6">
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData.slice().reverse()} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} stroke="currentColor" className="text-slate-400" />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} stroke="currentColor" className="text-slate-400" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                    itemStyle={{ color: '#818cf8', fontWeight: 'bold' }}
+                    labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
+                    formatter={(value: number) => [`${value} kWh`, 'Konsumsi']}
+                  />
+                  <Bar dataKey="kWh" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-[11px] uppercase bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400">
+                  <tr>
+                    <th className="px-4 py-3 font-bold rounded-l-lg">Bulan</th>
+                    <th className="px-4 py-3 font-bold text-right">Konsumsi (kWh)</th>
+                    <th className="px-4 py-3 font-bold text-right rounded-r-lg">Estimasi Biaya</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {monthlyData.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">{item.month}</td>
+                      <td className="px-4 py-3 text-right font-mono text-indigo-600 dark:text-indigo-400 font-bold">{item.kWh.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold">{formatRupiah(item.kWh * kwhTariff)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-10 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+            <Calendar className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Belum ada data konsumsi bulanan.</p>
+          </div>
+        )}
+      </div>
       </>
       )}
 

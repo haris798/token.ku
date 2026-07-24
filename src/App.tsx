@@ -430,6 +430,11 @@ export default function App() {
     await handleSaveSettings(updatedSettings, true);
   };
 
+  const handleAutoSaveLocal = (newSettings: AppSettings) => {
+    saveLocalSettings(newSettings);
+    setSettings(newSettings);
+  };
+
   const handleSaveSettings = async (newSettings: AppSettings, silent: boolean = false) => {
     setIsSaving(true);
     try {
@@ -777,7 +782,8 @@ export default function App() {
             {activeTab === 'settings' && settings && (
               <SettingsPanel 
                 settings={settings} 
-                onSave={handleSaveSettings} 
+                onSave={handleSaveSettings}
+                onAutoSaveLocal={handleAutoSaveLocal} 
                 onSeedSampleData={handleSeedSampleData}
                 onMirrorAllToSupabase={handleMirrorAllToSupabase}
                 isLoading={isSaving} 
