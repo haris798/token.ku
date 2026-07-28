@@ -318,54 +318,69 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
 
       <form onSubmit={handleSave} className="space-y-4">
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-4 gap-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-4">
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('basic')}
+              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeSubTab === 'basic'
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+              title="Dasar"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('telegram')}
+              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeSubTab === 'telegram'
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+              title="Telegram"
+            >
+              <Send className="h-4 w-4 text-sky-500" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('supabase')}
+              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeSubTab === 'supabase'
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+              title="Supabase"
+            >
+              <Database className="h-4 w-4 text-emerald-500" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('room')}
+              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeSubTab === 'room'
+                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
+                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+              title="Room Database"
+            >
+              <Database className="h-4 w-4 text-blue-500" />
+            </button>
+          </div>
+
           <button
-            type="button"
-            onClick={() => setActiveSubTab('basic')}
-            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeSubTab === 'basic'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-            }`}
-            title="Dasar"
+            type="submit"
+            disabled={isLoading}
+            title="Simpan Konfigurasi"
+            className="pb-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all flex items-center justify-center p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 cursor-pointer disabled:opacity-50"
           >
-            <Settings className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('telegram')}
-            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeSubTab === 'telegram'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-            }`}
-            title="Telegram"
-          >
-            <Send className="h-4 w-4 text-sky-500" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('supabase')}
-            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeSubTab === 'supabase'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-            }`}
-            title="Supabase"
-          >
-            <Database className="h-4 w-4 text-emerald-500" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('room')}
-            className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              activeSubTab === 'room'
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-            }`}
-            title="Room Database"
-          >
-            <Database className="h-4 w-4 text-blue-500" />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400" />
+            ) : (
+              <Save className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            )}
           </button>
         </div>
 
@@ -873,22 +888,6 @@ with check (true);`);
             </div>
           </>
         )}
-
-        {/* Submit Save Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full pt-3 pb-3 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-        >
-          {isLoading ? (
-            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              <span>Simpan Konfigurasi</span>
-            </>
-          )}
-        </button>
       </form>
     </div>
   );
