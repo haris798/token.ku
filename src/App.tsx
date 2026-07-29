@@ -150,11 +150,35 @@ export default function App() {
     if (wasOffline && isNowOnline) {
       console.log('[App] Connection restored, auto-syncing...');
       showBanner('success', 'Koneksi pulih! Melakukan sinkronisasi data...');
-      loadAppConfigAndData();
+      loadAppConfigAndData(false);
     }
     
     prevOnlineRef.current = isOnline;
   }, [isOnline]);
+
+  // ✅ Auto-sync berkala di background (tiap 60s) & saat jendela aktif
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (navigator.onLine && settings?.supabaseUrl && settings?.supabaseAnonKey) {
+        console.log('[App] Auto-sync Supabase running in background...');
+        loadAppConfigAndData(true);
+      }
+    }, 60000);
+
+    const handleFocus = () => {
+      if (navigator.onLine && settings?.supabaseUrl && settings?.supabaseAnonKey) {
+        console.log('[App] Window focus, background auto-syncing...');
+        loadAppConfigAndData(true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [settings?.supabaseUrl, settings?.supabaseAnonKey]);
 
   useEffect(() => {
     if (settings?.theme === 'dark') {
@@ -165,7 +189,7 @@ export default function App() {
   }, [settings?.theme]);
 
   // ✅ REFACTOR: Offline-first + Race condition guard
-  const loadAppConfigAndData = async () => {
+  const loadAppConfigAndData = async (isSilent: boolean = false) => {
     // GUARD: Cegah race condition (double load)
     if (isLoadingDataRef.current) {
       console.log('[loadAppConfigAndData] Skipped: already loading');
@@ -195,7 +219,7 @@ export default function App() {
       const hasSupabaseConfig = !!(loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey);
       
       if (!hasInternet || !hasSupabaseConfig) {
-        if (!hasInternet && hasSupabaseConfig) {
+        if (!hasInternet && hasSupabaseConfig && !isSilent) {
           showBanner('warning', 'Mode Offline: Menampilkan data lokal terakhir. Sinkronisasi ditunda.');
         }
         return; // Selesai - data lokal sudah di-set
@@ -204,7 +228,7 @@ export default function App() {
       // ═══════════════════════════════════════════════════════
       // STEP 3: ONLINE + ADA CONFIG → Sync ke Supabase
       // ═══════════════════════════════════════════════════════
-      setDataLoading(true);
+      if (!isSilent) setDataLoading(true);
       
       try {
         await syncLocalStorageWithRoomDb();
@@ -250,7 +274,7 @@ export default function App() {
           .catch(err => console.warn('[loadAppConfigAndData] Failed to clean Supabase duplicates:', err));
         
         if (localMutations.length > 0) {
-          mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations)
+          await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations)
             .catch(err => console.warn('[loadAppConfigAndData] Failed to mirror local data:', err));
         }
         
@@ -267,7 +291,7 @@ export default function App() {
       } catch (err) {
         console.error('[loadAppConfigAndData] Sync error, fallback to local:', err);
       } finally {
-        setDataLoading(false);
+        if (!isSilent) setDataLoading(false);
       }
     } finally {
       isLoadingDataRef.current = false;
