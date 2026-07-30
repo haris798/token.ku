@@ -755,12 +755,7 @@ export default function App() {
           </div>
         )}
         
-        {dataLoading && (
-          <div className="p-4 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-2xl flex items-center gap-3 text-xs border border-slate-200/60 dark:border-slate-800 font-medium font-sans">
-            <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-            <span>Sedang memuat pemakaian dan konfigurasi Token.ku Anda...</span>
-          </div>
-        )}
+
         
         <AnimatePresence mode="wait">
           <motion.div
