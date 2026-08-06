@@ -323,50 +323,50 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
             <button
               type="button"
               onClick={() => setActiveSubTab('basic')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              title="Pengaturan Umum"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeSubTab === 'basic'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Settings className="h-3.5 w-3.5" />
-              <span>Umum</span>
+              <Settings className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('telegram')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              title="Notifikasi Telegram"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeSubTab === 'telegram'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Send className="h-3.5 w-3.5" />
-              <span>Telegram</span>
+              <Send className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('supabase')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              title="Koneksi Supabase Cloud"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeSubTab === 'supabase'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <Database className="h-3.5 w-3.5" />
-              <span>Supabase</span>
+              <Database className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('room')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+              title="Data & Backup Database"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeSubTab === 'room'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <FileCode className="h-3.5 w-3.5" />
-              <span>Data & Backup</span>
+              <FileCode className="h-4 w-4" />
             </button>
           </div>
 

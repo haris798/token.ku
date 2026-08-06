@@ -67,9 +67,8 @@ export default function HistoryTable({ mutations, onDelete, onCleanDuplicates, i
         <div>
           <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
             <Clock className="h-4 w-4 text-indigo-500" />
-            Riwayat Log & Mutation kWh
+            Riwayat kwh
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Semua catatan sisa meteran dan kalkulasi pemakaian</p>
         </div>
         <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
           Total: {mutations.length} Record

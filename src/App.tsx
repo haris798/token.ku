@@ -652,6 +652,17 @@ export default function App() {
             {/* Mobile Controls */}
             <div className="flex items-center gap-1.5 sm:hidden">
               <button
+                onClick={() => setActiveTab('input')}
+                title="Catat kWh"
+                className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                  activeTab === 'input'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-900/40'
+                }`}
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+              <button
                 onClick={toggleTheme}
                 title={settings?.theme === 'dark' ? "Mode Terang" : "Mode Gelap"}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
@@ -662,70 +673,69 @@ export default function App() {
           </div>
 
           {/* Center Navigation Bar */}
-          <div className="flex items-center justify-center gap-1 p-1 bg-slate-100/80 dark:bg-slate-950/80 border border-slate-200/60 dark:border-slate-800 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
+          <div className="flex items-center justify-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-950/80 border border-slate-200/60 dark:border-slate-800 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              title="Dashboard"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeTab === 'dashboard'
                   ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('input')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'input'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Catat kWh</span>
+              <LayoutDashboard className="h-4.5 w-4.5" />
             </button>
 
             <button
               onClick={() => setActiveTab('prediction')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              title="Prediksi"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeTab === 'prediction'
                   ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <TrendingUp className="h-4 w-4" />
-              <span>Prediksi</span>
+              <TrendingUp className="h-4.5 w-4.5" />
             </button>
 
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              title="Riwayat"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeTab === 'history'
                   ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <History className="h-4 w-4" />
-              <span>Riwayat</span>
+              <History className="h-4.5 w-4.5" />
             </button>
 
             <button
               onClick={() => setActiveTab('settings')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+              title="Pengaturan"
+              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
                 activeTab === 'settings'
                   ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <SettingsIcon className="h-4 w-4" />
-              <span>Pengaturan</span>
+              <SettingsIcon className="h-4.5 w-4.5" />
             </button>
           </div>
 
-          {/* Desktop Controls (Database status + Theme Toggle) */}
+          {/* Desktop Controls (Plus Button + Database status + Theme Toggle) */}
           <div className="hidden sm:flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('input')}
+              title="Catat kWh"
+              className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+                activeTab === 'input'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/50 dark:border-indigo-900/40'
+              }`}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
             <div
               title={isOnline ? (settings?.supabaseUrl ? 'Cloud Connected' : 'Lokal Mode') : 'Offline'}
               className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border flex items-center gap-1.5 ${
