@@ -12,7 +12,7 @@ interface HistoryTableProps {
 
 export default function HistoryTable({ mutations, onDelete, onCleanDuplicates, isCleaning, kwhTariff = 1444.7 }: HistoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -62,17 +62,17 @@ export default function HistoryTable({ mutations, onDelete, onCleanDuplicates, i
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
-      <div className="p-5 border-b border-slate-50 dark:border-slate-800/80 flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
+      <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-            <Zap className="h-4 w-4 text-amber-500" />
-            Riwayat Log & Pemakaian kWh
+          <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+            <Clock className="h-4 w-4 text-indigo-500" />
+            Riwayat Log & Mutation kWh
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Pemakaian otomatis terekam dari sisa kWh meter manual</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Semua catatan sisa meteran dan kalkulasi pemakaian</p>
         </div>
-        <span className="text-[10px] font-semibold tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 px-2.5 py-1 rounded-full capitalize">
-          Supabase Active
+        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+          Total: {mutations.length} Record
         </span>
       </div>
 

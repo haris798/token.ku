@@ -318,69 +318,69 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
 
       <form onSubmit={handleSave} className="space-y-4">
         {/* Tab Navigation */}
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-4">
-          <div className="flex gap-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-5 overflow-x-auto hide-scrollbar">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setActiveSubTab('basic')}
-              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'basic'
-                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
-              title="Dasar"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3.5 w-3.5" />
+              <span>Umum</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('telegram')}
-              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'telegram'
-                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
-              title="Telegram"
             >
-              <Send className="h-4 w-4 text-sky-500" />
+              <Send className="h-3.5 w-3.5" />
+              <span>Telegram</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('supabase')}
-              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'supabase'
-                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
-              title="Supabase"
             >
-              <Database className="h-4 w-4 text-emerald-500" />
+              <Database className="h-3.5 w-3.5" />
+              <span>Supabase</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('room')}
-              className={`pb-2 text-xs font-bold capitalize tracking-wider border-b-2 transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
                 activeSubTab === 'room'
-                  ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400 font-extrabold'
-                  : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
-              title="Room Database"
             >
-              <Database className="h-4 w-4 text-blue-500" />
+              <FileCode className="h-3.5 w-3.5" />
+              <span>Data & Backup</span>
             </button>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            title="Simpan Konfigurasi"
-            className="pb-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all flex items-center justify-center p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/50 cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 ml-2"
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-indigo-600 dark:text-indigo-400" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
-              <Save className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <Save className="h-3.5 w-3.5" />
             )}
+            <span>Simpan</span>
           </button>
         </div>
 

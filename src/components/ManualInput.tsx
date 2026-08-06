@@ -31,10 +31,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
       return;
     }
 
-    // Format timestamp to proper ISO string using the current real time
     const nowIso = new Date().toISOString();
-
-    // If sisa kwh naik dari sebelumnya (topup), set notes to "Tambah Token" automatically
     const finalNotes = recordType === 'topup' ? 'Tambah Token' : 'Pencatatan Rutin';
 
     await onSubmit({
@@ -44,115 +41,117 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
       type: recordType,
     });
 
-    // Reset fields on success
     setRemainingKwhStr('');
   };
 
+  const handleQuickAdd = (addKwh: number) => {
+    const base = lastRecord ? lastRecord.remainingKwh : 0;
+    const nextVal = (base + addKwh).toFixed(2);
+    setRemainingKwhStr(nextVal);
+  };
+
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm p-6 max-w-xl mx-auto transition-colors duration-300">
-      <div className="flex items-center gap-3 mb-5">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm p-6 max-w-xl mx-auto transition-all space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-3">
         <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
           <Zap className="h-5 w-5" />
         </div>
         <div>
           <h3 className="font-bold text-slate-800 dark:text-slate-100">Catat Sisa kWh Meter</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Masukkan angka sisa kWh dari meteran listrik Anda</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Previous reading indicator */}
+        {/* Last reading badge */}
         {lastRecord && (
           <div className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800/80">
-            <span>Pencatatan Terakhir:</span>
-            <span className="font-bold text-slate-800 dark:text-slate-200">
-              {lastRecord.remainingKwh.toFixed(2)} kWh
-              <span className="font-normal text-slate-400 dark:text-slate-500 ml-1">
-                ({new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(lastRecord.timestamp)).replace(' pukul ', ', ')})
-              </span>
+            <span className="font-medium text-slate-500">Pencatatan Terakhir:</span>
+            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+              {lastRecord.remainingKwh.toFixed(2)} <span className="font-normal text-slate-400">kWh</span>
             </span>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row items-end gap-3">
-          {/* DateTime Log (Readonly) */}
-          <div className="flex-1 w-full">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5 flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-              Waktu
-            </label>
+        {/* Input Sisa kWh */}
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Sisa kWh Meteran Saat Ini <span className="text-rose-500">*</span>
+          </label>
+          <div className="relative">
             <input
-              type="text"
-              readOnly
-              disabled
-              value={new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 font-medium text-sm outline-none cursor-not-allowed"
+              type="number"
+              step="0.01"
+              required
+              min="0"
+              disabled={isLoading}
+              value={remainingKwhStr}
+              onChange={(e) => setRemainingKwhStr(e.target.value)}
+              placeholder="Contoh: 124.50"
+              className="w-full pl-4 pr-16 py-3.5 bg-slate-50 dark:bg-slate-950 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all font-mono font-bold text-xl outline-none"
             />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+              kWh
+            </span>
           </div>
+        </div>
 
-          {/* Input Sisa kWh */}
-          <div className="flex-[1.5] w-full">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize tracking-wider mb-1.5">
-              Sisa kWh <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                step="0.01"
-                required
-                min="0"
-                disabled={isLoading}
-                value={remainingKwhStr}
-                onChange={(e) => setRemainingKwhStr(e.target.value)}
-                placeholder="Contoh: 124.50"
-                className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100/50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl transition-all font-medium text-lg outline-none"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">
-                kWh
-              </span>
+        {/* Quick Add Token Preset Buttons */}
+        {lastRecord && (
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+              Isi Token Baru (Bantuan Cepat):
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {[20, 50, 100, 200].map((kwh) => (
+                <button
+                  key={kwh}
+                  type="button"
+                  onClick={() => handleQuickAdd(kwh)}
+                  className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200/60 dark:border-slate-700/60 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                >
+                  +{kwh} kWh
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            title="Simpan Pencatatan"
-            disabled={isLoading || remainingKwhStr === ''}
-            className="shrink-0 w-full sm:w-auto px-6 py-3 h-[50px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Save className="h-5 w-5" />
-            )}
-          </button>
-        </div>
+        )}
 
         {/* Real-time Calculation Preview */}
         {!isNaN(remainingKwh) && remainingKwh >= 0 && lastRecord && (
-          <div className={`p-4 rounded-xl border flex items-center gap-3 transition-colors ${
+          <div className={`p-3.5 rounded-xl border flex items-center gap-3 transition-colors text-xs ${
             recordType === 'topup' 
-              ? 'bg-teal-50 dark:bg-teal-950/30 border-teal-100 dark:border-teal-900/60 text-teal-800 dark:text-teal-200' 
-              : 'bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/60 text-amber-800 dark:text-amber-200'
+              ? 'bg-teal-50 dark:bg-teal-950/30 border-teal-200/80 dark:border-teal-900/60 text-teal-800 dark:text-teal-200' 
+              : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200/80 dark:border-amber-900/60 text-amber-800 dark:text-amber-200'
           }`}>
-            <ArrowRight className="h-5 w-5 shrink-0" />
-            <div className="text-xs">
-              <span className="font-medium">Deteksi Otomatis: </span>
+            <ArrowRight className="h-4 w-4 shrink-0" />
+            <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold">
-                {recordType === 'topup' ? 'Pengisian Token' : 'Pemakaian Daya'}
+                {recordType === 'topup' ? 'Pengisian Token (+)' : 'Pemakaian kWh (-)'}
               </span>
-              <span className="mx-1">•</span>
-              <span>Keterangan otomatis: </span>
-              <span className="font-bold">
-                {recordType === 'topup' ? 'Tambah Token' : 'Pencatatan Rutin'}
-              </span>
-              <span className="mx-1">•</span>
-              <span>Pemakaian: </span>
-              <span className="font-extrabold text-sm">
+              <span className="font-mono font-extrabold text-sm">
                 {calculatedMutation >= 0 ? '+' : ''}{calculatedMutation.toFixed(2)} kWh
               </span>
             </div>
           </div>
         )}
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isLoading || remainingKwhStr === ''}
+          className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all shadow-sm shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              <span>Simpan Pencatatan</span>
+            </>
+          )}
+        </button>
       </form>
     </div>
   );

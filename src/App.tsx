@@ -625,110 +625,128 @@ export default function App() {
         )}
       </AnimatePresence>
       
-      <header className="bg-slate-50 dark:bg-[#0a0f1c] pt-8 pb-6 px-4 shrink-0 transition-colors duration-300">
-        <div className="max-w-md mx-auto flex flex-col items-center gap-6">
-          {/* Logo & Title */}
-          <div className="flex items-center justify-center gap-4 w-full">
-            <div className="h-[52px] w-[52px] shrink-0 bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-center shadow-sm">
-              <Zap className="h-7 w-7 text-amber-500 dark:text-amber-400 fill-amber-500/20 dark:fill-amber-400/20" />
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 sticky top-0 z-40 py-3.5 px-4 sm:px-6 transition-colors duration-300">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3.5">
+          {/* Logo & Status Badge */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-md shadow-amber-500/20">
+                <Zap className="h-5 w-5 text-white fill-white" />
+              </div>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-black tracking-tight font-display text-slate-900 dark:text-white flex items-center gap-2">
+                  Token.ku
+                  {isCloudflareProxy && (
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded-md capitalize tracking-wider flex items-center gap-1 border border-orange-200/40 dark:border-orange-900/40">
+                      <Cloud className="h-3 w-3 text-orange-500" />
+                      CF
+                    </span>
+                  )}
+                </h1>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  Monitoring kWh Listrik
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col items-start">
-              <h1 className="text-[28px] leading-none font-bold tracking-tight font-display text-slate-900 dark:text-white flex items-center gap-2">
-                Token.ku
-                {isCloudflareProxy && (
-                  <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded-md capitalize tracking-wider flex items-center gap-1 border border-orange-200/40 dark:border-orange-900/40">
-                    <Cloud className="h-3.5 w-3.5 text-orange-500 animate-pulse" />
-                    CF
-                  </span>
-                )}
-              </h1>
+
+            {/* Mobile Controls */}
+            <div className="flex items-center gap-1.5 sm:hidden">
+              <button
+                onClick={toggleTheme}
+                title={settings?.theme === 'dark' ? "Mode Terang" : "Mode Gelap"}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+              >
+                {settings?.theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
+              </button>
             </div>
           </div>
 
-          {/* Navigation Pill */}
-          <div className="flex items-center justify-center gap-2.5 w-full max-w-full overflow-x-auto hide-scrollbar pb-2 sm:pb-0">
-            <div className="flex items-center gap-1.5 p-1.5 bg-transparent border border-slate-200 dark:border-[#1f2937] rounded-3xl">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                title="Dashboard"
-                className={`p-2.5 rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center active:scale-95 ${
-                  activeTab === 'dashboard'
-                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
-                    : 'bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2d3748]'
-                }`}
-              >
-                <LayoutDashboard className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setActiveTab('input')}
-                title="Input"
-                className={`p-2.5 rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center active:scale-95 ${
-                  activeTab === 'input'
-                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
-                    : 'bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2d3748]'
-                }`}
-              >
-                <Plus className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setActiveTab('prediction')}
-                title="Prediksi"
-                className={`p-2.5 rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center active:scale-95 ${
-                  activeTab === 'prediction'
-                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
-                    : 'bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2d3748]'
-                }`}
-              >
-                <TrendingUp className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setActiveTab('history')}
-                title="Riwayat"
-                className={`p-2.5 rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center active:scale-95 ${
-                  activeTab === 'history'
-                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
-                    : 'bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2d3748]'
-                }`}
-              >
-                <History className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setActiveTab('settings')}
-                title="Pengaturan"
-                className={`p-2.5 rounded-2xl transition-all duration-300 cursor-pointer flex items-center justify-center active:scale-95 ${
-                  activeTab === 'settings'
-                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-500/25'
-                    : 'bg-slate-100 dark:bg-[#1e293b] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#2d3748]'
-                }`}
-              >
-                <SettingsIcon className="h-5 w-5" />
-              </button>
-            </div>
-
+          {/* Center Navigation Bar */}
+          <div className="flex items-center justify-center gap-1 p-1 bg-slate-100/80 dark:bg-slate-950/80 border border-slate-200/60 dark:border-slate-800 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
             <button
-              title={isOnline ? (settings?.supabaseUrl ? 'Supabase Terhubung' : 'Online (Tanpa Supabase)') : 'Mode Offline'}
-              className={`p-3 rounded-2xl border transition-all duration-300 flex items-center justify-center shadow-sm dark:shadow-none flex-shrink-0 ${
-                settings?.supabaseUrl 
-                  ? (isOnline ? 'bg-transparent border-emerald-500/30 text-emerald-600 dark:text-emerald-500' : 'bg-transparent border-amber-500/30 text-amber-600 dark:text-amber-500')
-                  : 'bg-transparent border-slate-200 dark:border-[#1f2937] text-slate-400 dark:text-slate-600'
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'dashboard'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <Database className="h-5 w-5" />
+              <LayoutDashboard className="h-4 w-4" />
+              <span>Dashboard</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('input')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'input'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              <Plus className="h-4 w-4" />
+              <span>Catat kWh</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('prediction')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'prediction'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span>Prediksi</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'history'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              <History className="h-4 w-4" />
+              <span>Riwayat</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeTab === 'settings'
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+              }`}
+            >
+              <SettingsIcon className="h-4 w-4" />
+              <span>Pengaturan</span>
+            </button>
+          </div>
+
+          {/* Desktop Controls (Database status + Theme Toggle) */}
+          <div className="hidden sm:flex items-center gap-2">
+            <div
+              title={isOnline ? (settings?.supabaseUrl ? 'Cloud Connected' : 'Lokal Mode') : 'Offline'}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border flex items-center gap-1.5 ${
+                settings?.supabaseUrl 
+                  ? (isOnline ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300' : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-300')
+                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              <Database className="h-3.5 w-3.5" />
+              <span>{settings?.supabaseUrl ? (isOnline ? 'Cloud' : 'Offline') : 'Lokal'}</span>
+            </div>
 
             <button
               onClick={toggleTheme}
               title={settings?.theme === 'dark' ? "Ubah ke Mode Terang" : "Ubah ke Mode Gelap"}
-              className={`p-3 rounded-2xl bg-transparent border transition-all duration-300 flex items-center justify-center cursor-pointer hover:bg-slate-100 dark:hover:bg-[#1e293b] active:scale-95 shadow-sm dark:shadow-none flex-shrink-0 ${
-                settings?.theme === 'dark' 
-                 ? 'border-amber-500/30' 
-                 : 'border-indigo-500/30'
-              }`}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               {settings?.theme === 'dark' ? (
-                <Sun className="h-5 w-5 text-amber-500 transition-transform hover:rotate-90 duration-300" />
+                <Sun className="h-4 w-4 text-amber-400" />
               ) : (
-                <Moon className="h-5 w-5 text-indigo-500 transition-transform hover:-rotate-12 duration-300" />
+                <Moon className="h-4 w-4 text-indigo-600" />
               )}
             </button>
           </div>
