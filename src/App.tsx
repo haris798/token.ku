@@ -626,116 +626,30 @@ export default function App() {
       </AnimatePresence>
       
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 sticky top-0 z-40 py-3.5 px-4 sm:px-6 transition-colors duration-300">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3.5">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-3.5">
           {/* Logo & Status Badge */}
-          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-md shadow-amber-500/20">
-                <Zap className="h-5 w-5 text-white fill-white" />
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl font-black tracking-tight font-display text-slate-900 dark:text-white flex items-center gap-2">
-                  Token.ku
-                  {isCloudflareProxy && (
-                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded-md capitalize tracking-wider flex items-center gap-1 border border-orange-200/40 dark:border-orange-900/40">
-                      <Cloud className="h-3 w-3 text-orange-500" />
-                      CF
-                    </span>
-                  )}
-                </h1>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  Monitoring kWh Listrik
-                </span>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 shrink-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-md shadow-amber-500/20">
+              <Zap className="h-5 w-5 text-white fill-white" />
             </div>
-
-            {/* Mobile Controls */}
-            <div className="flex items-center gap-1.5 sm:hidden">
-              <button
-                onClick={() => setActiveTab('input')}
-                title="Catat kWh"
-                className={`p-2 rounded-xl transition-colors cursor-pointer ${
-                  activeTab === 'input'
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-900/40'
-                }`}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-              <button
-                onClick={toggleTheme}
-                title={settings?.theme === 'dark' ? "Mode Terang" : "Mode Gelap"}
-                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
-              >
-                {settings?.theme === 'dark' ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
-              </button>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-black tracking-tight font-display text-slate-900 dark:text-white flex items-center gap-2">
+                Token.ku
+                {isCloudflareProxy && (
+                  <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded-md capitalize tracking-wider flex items-center gap-1 border border-orange-200/40 dark:border-orange-900/40">
+                    <Cloud className="h-3 w-3 text-orange-500" />
+                    CF
+                  </span>
+                )}
+              </h1>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Monitoring kWh Listrik
+              </span>
             </div>
           </div>
 
-          {/* Center Navigation Bar */}
-          <div className="flex items-center justify-center gap-1.5 p-1.5 bg-slate-100/80 dark:bg-slate-950/80 border border-slate-200/60 dark:border-slate-800 rounded-2xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              title="Dashboard"
-              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
-                activeTab === 'dashboard'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <LayoutDashboard className="h-4.5 w-4.5" />
-            </button>
-
-            <button
-              onClick={() => setActiveTab('prediction')}
-              title="Prediksi"
-              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
-                activeTab === 'prediction'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <TrendingUp className="h-4.5 w-4.5" />
-            </button>
-
-            <button
-              onClick={() => setActiveTab('history')}
-              title="Riwayat"
-              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
-                activeTab === 'history'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <History className="h-4.5 w-4.5" />
-            </button>
-
-            <button
-              onClick={() => setActiveTab('settings')}
-              title="Pengaturan"
-              className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
-                activeTab === 'settings'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <SettingsIcon className="h-4.5 w-4.5" />
-            </button>
-          </div>
-
-          {/* Desktop Controls (Plus Button + Database status + Theme Toggle) */}
-          <div className="hidden sm:flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('input')}
-              title="Catat kWh"
-              className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
-                activeTab === 'input'
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                  : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/50 dark:border-indigo-900/40'
-              }`}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
+          {/* Controls (Database status + Theme Toggle) */}
+          <div className="flex items-center gap-2">
             <div
               title={isOnline ? (settings?.supabaseUrl ? 'Cloud Connected' : 'Lokal Mode') : 'Offline'}
               className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border flex items-center gap-1.5 ${
@@ -773,7 +687,7 @@ export default function App() {
         </div>
       )}
       
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 pb-16 space-y-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 pb-24 space-y-6">
         {!isOnline && settings?.supabaseUrl && (
           <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 rounded-2xl flex items-center gap-3 text-xs font-medium">
             <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
@@ -840,11 +754,70 @@ export default function App() {
         </AnimatePresence>
       </main>
       
-      <footer className="mt-auto py-6 px-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-400 dark:text-slate-500 transition-colors duration-300">
-        <div className="max-w-5xl mx-auto flex flex-col items-center justify-center gap-3">
-          <p>© {new Date().getFullYear()} Token.ku.</p>
+      {/* Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 py-2.5 px-4 transition-colors duration-300">
+        <div className="max-w-md mx-auto flex items-center justify-around gap-1">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            title="Dashboard"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'dashboard'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTab('prediction')}
+            title="Prediksi"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'prediction'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <TrendingUp className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTab('input')}
+            title="Catat kWh"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'input'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Plus className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTab('history')}
+            title="Riwayat"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'history'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <History className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setActiveTab('settings')}
+            title="Pengaturan"
+            className={`p-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'settings'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <SettingsIcon className="h-5 w-5" />
+          </button>
         </div>
-      </footer>
+      </nav>
       
       <AnimatePresence>
         {showSupabaseErrorModal && (
