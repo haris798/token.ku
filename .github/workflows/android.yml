@@ -44,6 +44,13 @@ jobs:
           fi
           npx cap sync android || npx cap sync
 
+      - name: Generate Android APK Icon
+        run: |
+          npm install -D @capacitor/assets
+          mkdir -p assets
+          cp public/logo.png assets/icon.png
+          npx @capacitor/assets generate --android
+
       - name: Build Android App (APK Debug)
         run: |
           if [ -d "android" ]; then

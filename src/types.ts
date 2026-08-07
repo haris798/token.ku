@@ -5,6 +5,7 @@ export interface MutationRecord {
   mutation: number; // Difference from previous reading
   type: 'consumption' | 'topup' | 'initial';
   notes: string;
+  synced?: boolean; // RxDB sync status
 }
 
 export interface AppSettings {

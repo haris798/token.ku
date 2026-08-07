@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { sendTelegramNotification } from '../lib/telegram';
-import { saveSupabaseSettings, loadSupabaseMutations, loadSupabaseSettings } from '../lib/db';
 import { Settings, Save, Send, AlertCircle, CheckCircle2, Database, Loader2, Copy, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SettingsPanelProps {
@@ -94,54 +93,8 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
   const [exportSupabaseLoading, setExportSupabaseLoading] = useState(false);
 
   const handleSyncAll = async () => {
-    if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
-      return;
-    }
-    if (!onMirrorAllToSupabase) return;
-
-    setSyncLoading(true);
-    setSyncResult(null);
-    try {
-      // 1. Mirror settings to Supabase first
-      const currentSettings: AppSettings = {
-        telegramToken: telegramToken.trim(),
-        telegramChatId: telegramChatId.trim(),
-        lowThreshold: parseFloat(lowThreshold.toString()) || 15.0,
-        kwhTariff: parseFloat(kwhTariff.toString()) || 1444.7,
-        telegramEnabled,
-        theme,
-        supabaseUrl: supabaseUrl.trim(),
-        supabaseAnonKey: supabaseAnonKey.trim(),
-        supabaseEmail: supabaseEmail.trim(),
-        supabasePassword: supabasePassword.trim()
-      };
-
-      let settingsSaved = false;
-      try {
-        await saveSupabaseSettings(supabaseUrl.trim(), supabaseAnonKey.trim(), currentSettings);
-        settingsSaved = true;
-      } catch (settingsErr) {
-        console.warn('Failed to save settings to Supabase during manual sync:', settingsErr);
-      }
-
-      // 2. Mirror mutations
-      const res = await onMirrorAllToSupabase(supabaseUrl.trim(), supabaseAnonKey.trim());
-      setSyncResult(res);
-
-      if (settingsSaved) {
-        alert('Sinkronisasi Sukses!\n- Konfigurasi aplikasi & pengaturan Telegram berhasil dicadangkan ke Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
-      } else {
-        alert('Sinkronisasi Sebagian!\n- Tabel token_settings belum siap atau tidak ditemukan di Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('Gagal melakukan sinkronisasi data ke Supabase.');
-    } finally {
-      setSyncLoading(false);
-    }
+    alert('Fitur Sinkronisasi Manual ke Supabase (Legacy) telah dinonaktifkan karena aplikasi kini menggunakan sinkronisasi otomatis RxDB.');
   };
-
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,51 +160,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
   };
 
   const handleExportSupabaseJSON = async () => {
-    if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
-      return;
-    }
-    setExportSupabaseLoading(true);
-    try {
-      // 1. Ambil data mutasi dari Supabase
-      const mutations = await loadSupabaseMutations(supabaseUrl.trim(), supabaseAnonKey.trim());
-      
-      // 2. Ambil data pengaturan dari Supabase (opsional, jika tabel ada)
-      let supabaseSettings = null;
-      try {
-        supabaseSettings = await loadSupabaseSettings(supabaseUrl.trim(), supabaseAnonKey.trim());
-      } catch (err) {
-        console.warn('Gagal memuat pengaturan dari Supabase, mengekspor data mutasi saja:', err);
-      }
-
-      const exportData = {
-        appName: "Token.ku",
-        exportedFrom: "Supabase",
-        exportedAt: new Date().toISOString(),
-        settings: supabaseSettings || {
-          supabaseUrl: supabaseUrl.trim(),
-          supabaseAnonKey: supabaseAnonKey.trim()
-        },
-        mutations: mutations
-      };
-
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", url);
-      downloadAnchor.setAttribute("download", `tokenpro_supabase_export_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      document.body.removeChild(downloadAnchor);
-      URL.revokeObjectURL(url);
-      
-      alert(`Berhasil mengekspor ${mutations.length} baris log data dari Supabase ke file JSON!`);
-    } catch (err: any) {
-      alert('Gagal mengekspor data dari Supabase: ' + (err.message || err));
-    } finally {
-      setExportSupabaseLoading(false);
-    }
+    alert('Fitur Ekspor JSON Supabase (Legacy) telah dinonaktifkan.');
   };
 
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,24 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import {
-  loadLocalSettings,
-  saveLocalSettings,
-  loadLocalMutations,
-  saveLocalMutation,
-  deleteLocalMutation,
-  seedLocalData,
-  loadSupabaseMutations,
-  saveSupabaseMutation,
-  deleteSupabaseMutation,
-  mirrorAllToSupabase,
-  deduplicateMutations,
-  cleanSupabaseDuplicates,
-  loadSupabaseSettings,
-  saveSupabaseSettings,
-  syncLocalStorageWithRoomDb
-} from './lib/db';
 import { sendTelegramNotification } from './lib/telegram';
-import { MutationRecord, AppSettings } from './types';
+import { AppSettings } from './types';
+import { useAppStore } from './store/useAppStore';
+import { useTokenMutations, useAddMutation, useDeleteMutation } from './hooks/useMutations';
 
 // Icons
 import {
@@ -40,11 +25,11 @@ import {
   Database
 } from 'lucide-react';
 
-// Components
-import Dashboard from './components/Dashboard';
-import ManualInput from './components/ManualInput';
-import HistoryTable from './components/HistoryTable';
-import SettingsPanel from './components/SettingsPanel';
+// Lazy loaded components (Optimasi Performa)
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const ManualInput = lazy(() => import('./components/ManualInput'));
+const HistoryTable = lazy(() => import('./components/HistoryTable'));
+const SettingsPanel = lazy(() => import('./components/SettingsPanel'));
 
 // ✅ INLINE HOOK: Deteksi koneksi internet (menghindari error file tidak ditemukan)
 function useOnlineStatus() {
@@ -70,11 +55,16 @@ function useOnlineStatus() {
 
 export default function App() {
   const [loading, setLoading] = useState(true);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [mutations, setMutations] = useState<MutationRecord[]>(() => loadLocalMutations());
-  const [settings, setSettings] = useState<AppSettings>(() => loadLocalSettings());
+  
+  // Menggunakan Zustand untuk pengaturan dan state activeTab
+  const { settings, setSettings, activeTab, setActiveTab } = useAppStore();
+  
+  // Menggunakan React Query untuk fetch data dari RxDB
+  const { data: mutations = [], isLoading: mutationsLoading } = useTokenMutations();
+  const addMutation = useAddMutation();
+  const deleteMutation = useDeleteMutation();
+  
   const [showSupabaseErrorModal, setShowSupabaseErrorModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'prediction' | 'history' | 'settings'>('dashboard');
   const [isSaving, setIsSaving] = useState(false);
   const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
@@ -82,252 +72,57 @@ export default function App() {
     return window.location.hostname === 'token.haris443.workers.dev' || window.location.hostname.includes('workers.dev');
   }, []);
 
-  // ✅ BARU: State & Refs untuk Offline-First & Race Condition Guard
   const isOnline = useOnlineStatus();
-  const isLoadingDataRef = useRef(false);
   const bannerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const prevOnlineRef = useRef(isOnline);
 
-  // ✅ FIX: showBanner dengan cleanup timeout (cegah memory leak)
   const showBanner = (type: 'success' | 'error' | 'warning', message: string) => {
     setBanner({ type, message });
-    
-    if (bannerTimeoutRef.current) {
-      clearTimeout(bannerTimeoutRef.current);
-    }
-    
+    if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
     bannerTimeoutRef.current = setTimeout(() => {
       setBanner(prev => prev?.message === message ? null : prev);
       bannerTimeoutRef.current = null;
     }, 6000);
   };
 
-  // Cleanup banner timeout saat unmount
   useEffect(() => {
     return () => {
-      if (bannerTimeoutRef.current) {
-        clearTimeout(bannerTimeoutRef.current);
-      }
+      if (bannerTimeoutRef.current) clearTimeout(bannerTimeoutRef.current);
     };
   }, []);
 
   useEffect(() => {
     const initialize = async () => {
       try {
-        // 1. Baca data lokal secara sinkron untuk offline-first
-        const loadedSettings = loadLocalSettings();
-        setSettings(loadedSettings);
-        
-        let localMutations = loadLocalMutations();
-        const uniqueLocal = deduplicateMutations(localMutations);
-        if (uniqueLocal.length !== localMutations.length) {
-          localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-          localMutations = uniqueLocal;
-        }
-        setMutations(localMutations);
+        // Jalankan migrasi data dari localStorage ke RxDB jika ada
+        const { migrateFromLocalStorage } = await import('./lib/database/migrate');
+        await migrateFromLocalStorage();
 
-        if (!loadedSettings.supabaseUrl || !loadedSettings.supabaseAnonKey) {
+        if (!settings.supabaseUrl || !settings.supabaseAnonKey) {
           setActiveTab('settings');
         }
       } catch (err) {
         console.error("Initialization error:", err);
       } finally {
-        // 2. Langsung matikan layar loading agar UI tampil seketika
         setLoading(false);
       }
-
-      // 3. Jalankan sinkronisasi cloud di background
-      loadAppConfigAndData();
     };
     initialize();
-  }, []);
+  }, [settings.supabaseUrl, settings.supabaseAnonKey, setActiveTab]);
 
-  // ✅ Auto-sync saat koneksi kembali online
-  useEffect(() => {
-    const wasOffline = prevOnlineRef.current === false;
-    const isNowOnline = isOnline === true;
-    
-    if (wasOffline && isNowOnline) {
-      console.log('[App] Connection restored, auto-syncing...');
-      showBanner('success', 'Koneksi pulih! Melakukan sinkronisasi data...');
-      loadAppConfigAndData(false);
-    }
-    
-    prevOnlineRef.current = isOnline;
-  }, [isOnline]);
-
-  // ✅ Auto-sync berkala di background (tiap 60s) & saat jendela aktif
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (navigator.onLine && settings?.supabaseUrl && settings?.supabaseAnonKey) {
-        console.log('[App] Auto-sync Supabase running in background...');
-        loadAppConfigAndData(true);
-      }
-    }, 60000);
-
-    const handleFocus = () => {
-      if (navigator.onLine && settings?.supabaseUrl && settings?.supabaseAnonKey) {
-        console.log('[App] Window focus, background auto-syncing...');
-        loadAppConfigAndData(true);
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [settings?.supabaseUrl, settings?.supabaseAnonKey]);
-
-  useEffect(() => {
-    if (settings?.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [settings?.theme]);
-
-  // ✅ REFACTOR: Offline-first + Race condition guard
-  const loadAppConfigAndData = async (isSilent: boolean = false) => {
-    // GUARD: Cegah race condition (double load)
-    if (isLoadingDataRef.current) {
-      console.log('[loadAppConfigAndData] Skipped: already loading');
-      return;
-    }
-    isLoadingDataRef.current = true;
-    
-    try {
-      // ═══════════════════════════════════════════════════════
-      // STEP 1: BACA DATA LOKAL DULU (OFFLINE-FIRST)
-      // ═══════════════════════════════════════════════════════
-      let loadedSettings = loadLocalSettings();
-      setSettings(loadedSettings);
-      
-      let localMutations = loadLocalMutations();
-      const uniqueLocal = deduplicateMutations(localMutations);
-      if (uniqueLocal.length !== localMutations.length) {
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-        localMutations = uniqueLocal;
-      }
-      setMutations(localMutations);
-      
-      // ═══════════════════════════════════════════════════════
-      // STEP 2: CEK KONEKSI INTERNET
-      // ═══════════════════════════════════════════════════════
-      const hasInternet = navigator.onLine;
-      const hasSupabaseConfig = !!(loadedSettings.supabaseUrl && loadedSettings.supabaseAnonKey);
-      
-      if (!hasInternet || !hasSupabaseConfig) {
-        if (!hasInternet && hasSupabaseConfig && !isSilent) {
-          showBanner('warning', 'Mode Offline: Menampilkan data lokal terakhir. Sinkronisasi ditunda.');
-        }
-        return; // Selesai - data lokal sudah di-set
-      }
-      
-      // ═══════════════════════════════════════════════════════
-      // STEP 3: ONLINE + ADA CONFIG → Sync ke Supabase
-      // ═══════════════════════════════════════════════════════
-      if (!isSilent) setDataLoading(true);
-      
-      try {
-        await syncLocalStorageWithRoomDb();
-        
-        loadedSettings = loadLocalSettings();
-        localMutations = loadLocalMutations();
-        const uniqueLocalSync = deduplicateMutations(localMutations);
-        if (uniqueLocalSync.length !== localMutations.length) {
-          localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocalSync));
-          localMutations = uniqueLocalSync;
-        }
-        setSettings(loadedSettings);
-        setMutations(localMutations);
-        
-        try {
-          const remoteSettings = await loadSupabaseSettings(
-            loadedSettings.supabaseUrl, 
-            loadedSettings.supabaseAnonKey
-          );
-          if (remoteSettings) {
-            loadedSettings = {
-              ...loadedSettings,
-              telegramToken: remoteSettings.telegramToken ?? loadedSettings.telegramToken,
-              telegramChatId: remoteSettings.telegramChatId ?? loadedSettings.telegramChatId,
-              lowThreshold: remoteSettings.lowThreshold !== undefined 
-                ? remoteSettings.lowThreshold : loadedSettings.lowThreshold,
-              kwhTariff: remoteSettings.kwhTariff !== undefined 
-                ? remoteSettings.kwhTariff : loadedSettings.kwhTariff,
-              telegramEnabled: remoteSettings.telegramEnabled !== undefined 
-                ? remoteSettings.telegramEnabled : loadedSettings.telegramEnabled,
-              theme: remoteSettings.theme ?? loadedSettings.theme,
-              supabaseUrl: remoteSettings.supabaseUrl || loadedSettings.supabaseUrl,
-              supabaseAnonKey: remoteSettings.supabaseAnonKey || loadedSettings.supabaseAnonKey
-            };
-            saveLocalSettings(loadedSettings);
-            setSettings(loadedSettings);
-          }
-        } catch (err) {
-          console.warn('[loadAppConfigAndData] Failed to load remote settings:', err);
-        }
-        
-        cleanSupabaseDuplicates(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey)
-          .catch(err => console.warn('[loadAppConfigAndData] Failed to clean Supabase duplicates:', err));
-        
-        if (localMutations.length > 0) {
-          await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations)
-            .catch(err => console.warn('[loadAppConfigAndData] Failed to mirror local data:', err));
-        }
-        
-        try {
-          const loadedMutations = await loadSupabaseMutations(
-            loadedSettings.supabaseUrl, 
-            loadedSettings.supabaseAnonKey
-          );
-          localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
-          setMutations(loadedMutations);
-        } catch (err) {
-          console.warn('[loadAppConfigAndData] Failed to pull from Supabase, keeping local data:', err);
-        }
-      } catch (err) {
-        console.error('[loadAppConfigAndData] Sync error, fallback to local:', err);
-      } finally {
-        if (!isSilent) setDataLoading(false);
-      }
-    } finally {
-      isLoadingDataRef.current = false;
-    }
-  };
-
-
-  // ✅ FIX: handleAddMutation - retroaktif akurat + Telegram fix
-  const handleAddMutation = async (newRecord: {
-    remainingKwh: number;
-    timestamp: string;
-    notes: string;
-    type: 'consumption' | 'topup' | 'initial'
-  }) => {
-    if (!settings) return;
+  const handleAddMutation = async (newRecord: { remainingKwh: number; timestamp: string; notes: string; type: 'consumption' | 'topup' | 'initial' }) => {
     setIsSaving(true);
-    
     try {
       const newTimestamp = new Date(newRecord.timestamp).getTime();
+      const chronological = [...mutations].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
-      // Urutkan kronologis
-      const chronological = [...mutations].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
+      const prevRecord = chronological.filter(r => new Date(r.timestamp).getTime() < newTimestamp).pop() ?? null;
       
-      // ✅ FIX: Cari record terdekat SEBELUM timestamp input (bukan yang terbaru)
-      const prevRecord = chronological
-        .filter(r => new Date(r.timestamp).getTime() < newTimestamp)
-        .pop() ?? null;
-      
-      let mutation = 0;
+      let mutationAmount = 0;
       let finalType = newRecord.type;
       
       if (prevRecord) {
-        mutation = newRecord.remainingKwh - prevRecord.remainingKwh;
-        finalType = mutation >= 0 ? 'topup' : 'consumption';
+        mutationAmount = newRecord.remainingKwh - prevRecord.remainingKwh;
+        finalType = mutationAmount >= 0 ? 'topup' : 'consumption';
       } else {
         finalType = 'initial';
       }
@@ -335,251 +130,86 @@ export default function App() {
       const recordToSave = {
         timestamp: newRecord.timestamp,
         remainingKwh: newRecord.remainingKwh,
-        mutation,
+        mutation: mutationAmount,
         type: finalType,
         notes: newRecord.notes,
       };
       
-      // OFFLINE-FIRST: Simpan lokal DULU, baru sync jika online
-      const updatedLocal = saveLocalMutation(recordToSave);
-      setMutations(updatedLocal); // Update UI langsung dari lokal
+      // Simpan menggunakan hook React Query (menyimpan ke RxDB)
+      await addMutation.mutateAsync(recordToSave);
+      showBanner('success', 'Pencatatan berhasil disimpan secara lokal (Offline-First).');
       
-      const hasInternet = navigator.onLine;
-      const hasSupabase = !!(settings.supabaseUrl && settings.supabaseAnonKey);
-      
-      if (hasInternet && hasSupabase) {
-        try {
-          await saveSupabaseMutation(settings.supabaseUrl, settings.supabaseAnonKey, recordToSave);
-          const updated = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
-          setMutations(updated);
-          showBanner('success', 'Pencatatan berhasil disimpan ke Supabase Cloud.');
-        } catch (sbErr) {
-          console.error('[handleAddMutation] Supabase save failed, keeping local:', sbErr);
-          showBanner('warning', 'Gagal sync ke Supabase. Data tersimpan di lokal.');
-        }
-      } else if (!hasInternet) {
-        showBanner('warning', 'Mode Offline: Data tersimpan di lokal. Akan di-sync saat online.');
-      } else {
-        showBanner('success', 'Pencatatan berhasil disimpan di penyimpanan lokal.');
-      }
-      
-      // ✅ FIX: Telegram alert berdasarkan STATE TERKINI, bukan record input
-      if (settings.telegramEnabled) {
-        const currentLatest = [...updatedLocal].sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )[0];
+      // Notifikasi Telegram
+      if (settings.telegramEnabled && newRecord.remainingKwh <= settings.lowThreshold) {
+        const formattedDate = new Date(newRecord.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+        const alertMsg = `⚠️ *Token.ku - Sisa kWh Rendah!* ⚠️\n\n🔋 *Sisa kWh:* ${newRecord.remainingKwh.toFixed(2)} kWh\n📉 *Ambang Batas:* ${settings.lowThreshold.toFixed(2)} kWh\n⏰ *Waktu:* ${formattedDate}\n\n📝 *Catatan:* ${newRecord.notes || '-'}\n\nSegera lakukan pengisian token.`;
         
-        if (currentLatest && currentLatest.remainingKwh <= settings.lowThreshold) {
-          const formattedDate = new Date(currentLatest.timestamp).toLocaleString('id-ID', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          });
-          const alertMsg = `⚠️ *Token.ku - Sisa kWh Rendah!* ⚠️\n\n🔋 *Sisa kWh:* ${currentLatest.remainingKwh.toFixed(2)} kWh\n📉 *Ambang Batas:* ${settings.lowThreshold.toFixed(2)} kWh\n⏰ *Waktu:* ${formattedDate}\n\n📝 *Catatan:* ${currentLatest.notes || '-'}\n\nSegera lakukan pengisian token.`;
-          
-          const telSuccess = await sendTelegramNotification(
-            settings.telegramToken, 
-            settings.telegramChatId, 
-            alertMsg
-          );
-          
-          if (telSuccess) {
-            showBanner('warning', 'Peringatan saldo rendah terkirim ke Telegram.');
-          } else {
-            showBanner('error', 'Notifikasi Telegram gagal terkirim.');
-          }
-        }
+        const telSuccess = await sendTelegramNotification(settings.telegramToken, settings.telegramChatId, alertMsg);
+        if (telSuccess) showBanner('warning', 'Peringatan saldo rendah terkirim ke Telegram.');
       }
-      
       setActiveTab('dashboard');
     } catch (err) {
-      console.error('[handleAddMutation] Error:', err);
+      console.error(err);
       showBanner('error', 'Gagal menyimpan pencatatan.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // ✅ FIX: handleDeleteMutation - pakai id bukan timestamp
   const handleDeleteMutation = async (id: string) => {
-    if (!settings) return;
     setIsSaving(true);
-    
-    const recordToDelete = mutations.find(m => m.id && String(m.id) === String(id));
-    
     try {
-      // Delete lokal by id
-      const updatedLocal = deleteLocalMutation(id);
-      setMutations(updatedLocal);
-      
-      const hasInternet = navigator.onLine;
-      const hasSupabase = !!(settings.supabaseUrl && settings.supabaseAnonKey);
-      
-      if (hasInternet && hasSupabase && recordToDelete) {
-        try {
-          // ✅ FIX: Delete by ID, bukan timestamp (hindari hapus data lain)
-          await deleteSupabaseMutation(
-            settings.supabaseUrl, 
-            settings.supabaseAnonKey, 
-            recordToDelete.id || recordToDelete.timestamp
-          );
-          
-          const updated = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
-          setMutations(updated);
-          showBanner('success', 'Pencatatan berhasil dihapus dari Supabase Cloud.');
-        } catch (sbErr) {
-          console.error('[handleDeleteMutation] Supabase delete failed:', sbErr);
-          showBanner('warning', 'Gagal hapus dari Supabase. Dihapus dari lokal saja.');
-        }
-      } else if (!hasInternet) {
-        showBanner('warning', 'Mode Offline: Dihapus dari lokal. Akan di-sync saat online.');
-      } else {
-        showBanner('success', 'Pencatatan berhasil dihapus dari penyimpanan lokal.');
-      }
+      await deleteMutation.mutateAsync(id);
+      showBanner('success', 'Pencatatan berhasil dihapus.');
     } catch (err) {
-      console.error('[handleDeleteMutation] Error:', err);
+      console.error(err);
       showBanner('error', 'Gagal menghapus data.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const toggleTheme = async () => {
-    if (!settings) return;
-    const currentTheme = settings.theme || 'dark';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    const updatedSettings: AppSettings = {
-      ...settings,
-      theme: newTheme
-    };
-    await handleSaveSettings(updatedSettings, true);
+  const handleCleanDuplicates = async () => {
+    // Dengan arsitektur RxDB, duplicate clean harus dilakukan di level query database
+    showBanner('warning', 'Fitur clean duplicates sedang dinonaktifkan dalam arsitektur baru.');
+  };
+
+  const toggleTheme = () => {
+    useAppStore.getState().toggleTheme();
   };
 
   const handleAutoSaveLocal = (newSettings: AppSettings) => {
-    saveLocalSettings(newSettings);
     setSettings(newSettings);
   };
 
   const handleSaveSettings = async (newSettings: AppSettings, silent: boolean = false) => {
     setIsSaving(true);
     try {
-      saveLocalSettings(newSettings);
       setSettings(newSettings);
+      if (!silent) showBanner('success', 'Konfigurasi berhasil disimpan.');
       
-      const localMutations = loadLocalMutations();
-      
+      // Setup Supabase Replication via RxDB jika dikonfigurasi
       if (newSettings.supabaseUrl && newSettings.supabaseAnonKey) {
-        (window as any).__missingTable = false;
-        try {
-          let supabaseSettingsDetails = '';
-          try {
-            await saveSupabaseSettings(newSettings.supabaseUrl, newSettings.supabaseAnonKey, newSettings);
-            supabaseSettingsDetails = ' Pengaturan disimpan ke cloud';
-          } catch (setErr) {
-            console.warn('Could not save settings to Supabase:', setErr);
-            supabaseSettingsDetails = ' (Tabel token_settings tidak ditemukan, simpan lokal sukses)';
-            (window as any).__missingTable = true;
-          }
-          
-          let syncDetails = '';
-          if (localMutations.length > 0) {
-            try {
-              const syncResult = await mirrorAllToSupabase(newSettings.supabaseUrl, newSettings.supabaseAnonKey, localMutations);
-              if (syncResult.successCount > 0) {
-                syncDetails = ` (Menyinkronkan ${syncResult.successCount} data log baru, melewati ${syncResult.failedCount} data duplikat)`;
-              } else if (syncResult.failedCount > 0) {
-                syncDetails = ` (Semua ${syncResult.failedCount} data sudah sinkron)`;
-              }
-            } catch (syncErr) {
-              console.warn('Failed to auto-mirror existing data to Supabase during config update:', syncErr);
-            }
-          }
-          
-          const loadedMutations = await loadSupabaseMutations(newSettings.supabaseUrl, newSettings.supabaseAnonKey);
-          localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
-          setMutations(loadedMutations);
-          
-          if ((window as any).__missingTable) {
-            (window as any).__missingTable = false;
-            setShowSupabaseErrorModal(true);
-            if (!silent) showBanner('warning', `Konfigurasi disimpan secara lokal!`);
-          } else {
-            if (!silent) showBanner('success', `${supabaseSettingsDetails} & sync data Supabase${syncDetails}.`);
-          }
-        } catch (err) {
-          console.error('Failed to load from new Supabase config, using local instead:', err);
-          setMutations(localMutations);
-          if (!silent) showBanner('warning', 'Konfigurasi disimpan secara lokal. Supabase baru tidak dapat dihubungi.');
-        }
-      } else {
-        setMutations(localMutations);
-        if (!silent) showBanner('success', 'Konfigurasi berhasil disimpan secara lokal.');
+         const { getDatabase, setupSupabaseReplication } = await import('./lib/database/rxdb');
+         const db = await getDatabase();
+         await setupSupabaseReplication(db, newSettings.supabaseUrl, newSettings.supabaseAnonKey);
+         if (!silent) showBanner('success', 'Replikasi cloud (Supabase) berhasil diaktifkan.');
       }
     } catch (err) {
-      console.error('Error saving settings:', err);
+      console.error(err);
       if (!silent) showBanner('error', 'Gagal menyimpan konfigurasi.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleMirrorAllToSupabase = async (url: string, key: string): Promise<{ successCount: number; failedCount: number }> => {
-    return await mirrorAllToSupabase(url, key, mutations);
-  };
-
-  const handleCleanDuplicates = async () => {
-    if (!settings) return;
-    setIsSaving(true);
-    try {
-      let sbCleaned = 0;
-      
-      if (settings.supabaseUrl && settings.supabaseAnonKey) {
-        try {
-          const res = await cleanSupabaseDuplicates(settings.supabaseUrl, settings.supabaseAnonKey);
-          sbCleaned = res.cleanedCount;
-        } catch (sbErr) {
-          console.error('Failed to clean duplicates from Supabase:', sbErr);
-        }
-      }
-      
-      const localMutations = loadLocalMutations();
-      const uniqueLocal = deduplicateMutations(localMutations);
-      localStorage.setItem('tokenpro_mutations', JSON.stringify(uniqueLocal));
-      
-      if (settings.supabaseUrl && settings.supabaseAnonKey) {
-        const loadedMutations = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
-        localStorage.setItem('tokenpro_mutations', JSON.stringify(loadedMutations));
-        setMutations(loadedMutations);
-      } else {
-        setMutations(uniqueLocal);
-      }
-      
-      const totalRemoved = (localMutations.length - uniqueLocal.length) + sbCleaned;
-      if (totalRemoved > 0) {
-        showBanner('success', `Berhasil membersihkan ${totalRemoved} data duplikat!`);
-      } else {
-        showBanner('success', 'Semua data sudah bersih dari duplikat.');
-      }
-    } catch (err) {
-      console.error('Error cleaning duplicates:', err);
-      showBanner('error', 'Gagal membersihkan data duplikat.');
-    } finally {
-      setIsSaving(false);
-    }
+  const handleMirrorAllToSupabase = async () => {
+    return { successCount: 0, failedCount: 0 }; // Diurus oleh RxDB Replication
   };
 
   const handleSeedSampleData = async () => {
-    setIsSaving(true);
-    try {
-      const seeded = seedLocalData();
-      setSettings(seeded.settings);
-      setMutations(seeded.mutations);
-      showBanner('success', 'Data log dan pengaturan contoh berhasil diimpor ke penyimpanan lokal!');
-    } catch (err) {
-      console.error('Error seeding data:', err);
-      showBanner('error', 'Gagal mengimpor data contoh.');
-    } finally {
-      setIsSaving(false);
-    }
+    // Seed logika perlu disesuaikan dengan RxDB
+    showBanner('warning', 'Fitur seed data belum tersedia di arsitektur RxDB.');
   };
 
   const lastRecord = useMemo(() => {
@@ -592,7 +222,7 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-800">
         <Loader2 className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
         <h2 className="text-lg font-bold font-display tracking-wide">Memuat Token.ku...</h2>
-        <p className="text-xs text-slate-400 mt-1">Menginisialisasi sistem...</p>
+        <p className="text-xs text-slate-400 mt-1">Menginisialisasi arsitektur baru...</p>
       </div>
     );
   }
@@ -677,7 +307,7 @@ export default function App() {
         </div>
       </header>
       
-      {dataLoading && (
+      {mutationsLoading && (
         <div className="w-full h-1 bg-indigo-100 dark:bg-slate-800 overflow-hidden relative">
           <div className="h-full bg-indigo-600 w-1/3 rounded-full animate-[loading_1.5s_infinite_ease-in-out]" style={{
             animationName: 'shimmer',
@@ -708,48 +338,54 @@ export default function App() {
             transition={{ duration: 0.2 }}
             className="outline-none"
           >
-            {activeTab === 'dashboard' && (
-              <Dashboard 
-                mutations={mutations} 
-                lowThreshold={settings?.lowThreshold || 15.0} 
-                kwhTariff={settings?.kwhTariff || 1444.7} 
-                activeTab="dashboard"
-              />
-            )}
-            {activeTab === 'prediction' && (
-              <Dashboard 
-                mutations={mutations} 
-                lowThreshold={settings?.lowThreshold || 15.0} 
-                kwhTariff={settings?.kwhTariff || 1444.7} 
-                activeTab="prediction"
-              />
-            )}
-            {activeTab === 'input' && (
-              <ManualInput 
-                lastRecord={lastRecord} 
-                onSubmit={handleAddMutation} 
-                isLoading={isSaving} 
-              />
-            )}
-            {activeTab === 'history' && (
-              <HistoryTable 
-                mutations={mutations} 
-                onDelete={handleDeleteMutation}
-                onCleanDuplicates={handleCleanDuplicates}
-                isCleaning={isSaving}
-                kwhTariff={settings?.kwhTariff || 1444.7}
-              />
-            )}
-            {activeTab === 'settings' && settings && (
-              <SettingsPanel 
-                settings={settings} 
-                onSave={handleSaveSettings}
-                onAutoSaveLocal={handleAutoSaveLocal} 
-                onSeedSampleData={handleSeedSampleData}
-                onMirrorAllToSupabase={handleMirrorAllToSupabase}
-                isLoading={isSaving} 
-              />
-            )}
+            <Suspense fallback={
+              <div className="flex justify-center p-10">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+              </div>
+            }>
+              {activeTab === 'dashboard' && (
+                <Dashboard 
+                  mutations={mutations} 
+                  lowThreshold={settings?.lowThreshold || 15.0} 
+                  kwhTariff={settings?.kwhTariff || 1444.7} 
+                  activeTab="dashboard"
+                />
+              )}
+              {activeTab === 'prediction' && (
+                <Dashboard 
+                  mutations={mutations} 
+                  lowThreshold={settings?.lowThreshold || 15.0} 
+                  kwhTariff={settings?.kwhTariff || 1444.7} 
+                  activeTab="prediction"
+                />
+              )}
+              {activeTab === 'input' && (
+                <ManualInput 
+                  lastRecord={lastRecord} 
+                  onSubmit={handleAddMutation} 
+                  isLoading={isSaving} 
+                />
+              )}
+              {activeTab === 'history' && (
+                <HistoryTable 
+                  mutations={mutations} 
+                  onDelete={handleDeleteMutation}
+                  onCleanDuplicates={handleCleanDuplicates}
+                  isCleaning={isSaving}
+                  kwhTariff={settings?.kwhTariff || 1444.7}
+                />
+              )}
+              {activeTab === 'settings' && settings && (
+                <SettingsPanel 
+                  settings={settings} 
+                  onSave={handleSaveSettings}
+                  onAutoSaveLocal={handleAutoSaveLocal} 
+                  onSeedSampleData={handleSeedSampleData}
+                  onMirrorAllToSupabase={handleMirrorAllToSupabase}
+                  isLoading={isSaving} 
+                />
+              )}
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>
