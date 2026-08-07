@@ -56,6 +56,17 @@ jobs:
           cp public/logo.png assets/icon.png
           npx @capacitor/assets generate --android
 
+      - name: Cache Android Keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
+
+      - name: Auto-increment Version Code
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/g" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/g" android/app/build.gradle
+
       - name: Build Android App (APK Debug)
         run: |
           if [ -d "android" ]; then
