@@ -22,8 +22,10 @@ const defaultSettings: AppSettings = {
   telegramEnabled: false,
   telegramToken: '',
   telegramChatId: '',
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+  supabaseEmail: import.meta.env.VITE_SUPABASE_USER || '',
+  supabasePassword: import.meta.env.VITE_SUPABASE_PASS || '',
   theme: 'dark'
 };
 
