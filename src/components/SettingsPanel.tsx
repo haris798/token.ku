@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { sendTelegramNotification } from '../lib/telegram';
 import { Settings, Save, Send, AlertCircle, CheckCircle2, Database, Loader2, Copy, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -127,7 +129,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
     }
   };
 
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     try {
       const configObj = {
         telegramToken: telegramToken.trim(),
@@ -145,15 +147,39 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       };
 
       const jsonString = JSON.stringify(configObj, null, 2);
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", url);
-      downloadAnchor.setAttribute("download", "tokenpro_settings.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      document.body.removeChild(downloadAnchor);
-      URL.revokeObjectURL(url);
+
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const permission = await Filesystem.requestPermissions();
+          if (permission.publicStorage !== 'granted') {
+            alert('Izin penyimpanan ditolak! Tidak dapat mengekspor file.');
+            return;
+          }
+        } catch (e) {
+          console.error("Izin error:", e);
+        }
+
+        const fileName = `tokenpro_settings_${Date.now()}.json`;
+        
+        await Filesystem.writeFile({
+          path: `Download/${fileName}`,
+          data: jsonString,
+          directory: Directory.ExternalStorage,
+          encoding: Encoding.UTF8,
+        });
+        
+        alert(`Pengaturan berhasil diekspor ke internal/Download/${fileName}`);
+      } else {
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", url);
+        downloadAnchor.setAttribute("download", "tokenpro_settings.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        document.body.removeChild(downloadAnchor);
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       alert('Gagal mengekspor pengaturan: ' + err);
     }
