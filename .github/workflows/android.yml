@@ -25,10 +25,15 @@ jobs:
         run: npm ci || npm install
 
       - name: Build Web Application
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_USER: ${{ secrets.VITE_SUPABASE_USER }}
+          VITE_SUPABASE_PASS: ${{ secrets.VITE_SUPABASE_PASS }}
         run: npm run build
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: temurin
@@ -44,6 +49,24 @@ jobs:
           fi
           npx cap sync android || npx cap sync
 
+      - name: Generate Android APK Icon
+        run: |
+          npm install -D @capacitor/assets
+          mkdir -p assets
+          cp public/logo.png assets/icon.png
+          npx @capacitor/assets generate --android
+
+      - name: Cache Android Keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: debug-keystore-v1
+
+      - name: Auto-increment Version Code
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/g" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/g" android/app/build.gradle
+
       - name: Build Android App (APK Debug)
         run: |
           if [ -d "android" ]; then
@@ -55,8 +78,13 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare APK Output
+        run: |
+          mkdir -p token
+          cp android/app/build/outputs/apk/debug/app-debug.apk token/Tokenku.apk
+
       - name: Upload Android Debug APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tokenpro-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: token-apk
+          path: token/Tokenku.apk
