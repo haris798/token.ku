@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Toaster, toast } from 'react-hot-toast';
 import {
   loadLocalSettings,
   saveLocalSettings,
@@ -599,6 +600,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 overflow-x-hidden w-full relative">
+      <Toaster position="top-center" />
       <AnimatePresence>
         {banner && (
           <motion.div
@@ -902,7 +904,7 @@ create policy "Allow all users to read and insert"
 on public.token_settings for all
 using (true)
 with check (true);`);
-                      alert('Perintah SQL berhasil disalin!');
+                      toast.success('Perintah SQL berhasil disalin!');
                     }}
                     className="absolute right-2.5 top-2.5 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-semibold rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >

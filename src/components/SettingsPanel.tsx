@@ -3,6 +3,7 @@ import { AppSettings } from '../types';
 import { sendTelegramNotification } from '../lib/telegram';
 import { saveSupabaseSettings, loadSupabaseMutations, loadSupabaseSettings } from '../lib/db';
 import { Settings, Save, Send, AlertCircle, CheckCircle2, Database, Loader2, Copy, Download, Upload, FileCode, ChevronDown, ChevronUp } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -95,7 +96,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
 
   const handleSyncAll = async () => {
     if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
+      toast.error('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
       return;
     }
     if (!onMirrorAllToSupabase) return;
@@ -130,13 +131,13 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       setSyncResult(res);
 
       if (settingsSaved) {
-        alert('Sinkronisasi Sukses!\n- Konfigurasi aplikasi & pengaturan Telegram berhasil dicadangkan ke Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
+        toast.success('Sinkronisasi Sukses!\n- Konfigurasi aplikasi & pengaturan Telegram berhasil dicadangkan ke Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
       } else {
-        alert('Sinkronisasi Sebagian!\n- Tabel token_settings belum siap atau tidak ditemukan di Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
+        toast.success('Sinkronisasi Sebagian!\n- Tabel token_settings belum siap atau tidak ditemukan di Supabase.\n- Berhasil menyinkronkan data log pemakaian.');
       }
     } catch (e) {
       console.error(e);
-      alert('Gagal melakukan sinkronisasi data ke Supabase.');
+      toast.error('Gagal melakukan sinkronisasi data ke Supabase.');
     } finally {
       setSyncLoading(false);
     }
@@ -168,7 +169,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       setSeedSuccess(true);
     } catch (e) {
       console.error(e);
-      alert('Gagal mengimpor data contoh.');
+      toast.error('Gagal mengimpor data contoh.');
     } finally {
       setSeedLoading(false);
     }
@@ -202,13 +203,13 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       document.body.removeChild(downloadAnchor);
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Gagal mengekspor pengaturan: ' + err);
+      toast.error('Gagal mengekspor pengaturan: ' + err);
     }
   };
 
   const handleExportSupabaseJSON = async () => {
     if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
+      toast.error('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
       return;
     }
     setExportSupabaseLoading(true);
@@ -246,9 +247,9 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       document.body.removeChild(downloadAnchor);
       URL.revokeObjectURL(url);
       
-      alert(`Berhasil mengekspor ${mutations.length} baris log data dari Supabase ke file JSON!`);
+      toast.success(`Berhasil mengekspor ${mutations.length} baris log data dari Supabase ke file JSON!`);
     } catch (err: any) {
-      alert('Gagal mengekspor data dari Supabase: ' + (err.message || err));
+      toast.error('Gagal mengekspor data dari Supabase: ' + (err.message || err));
     } finally {
       setExportSupabaseLoading(false);
     }
@@ -275,7 +276,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       document.body.removeChild(downloadAnchor);
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('Gagal mengekspor kredensial Supabase');
+      toast.error('Gagal mengekspor kredensial Supabase');
     }
   };
 
@@ -292,12 +293,12 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
           if (parsed.supabase.anonKey !== undefined) setSupabaseAnonKey(parsed.supabase.anonKey);
           if (parsed.supabase.email !== undefined) setSupabaseEmail(parsed.supabase.email);
           if (parsed.supabase.password !== undefined) setSupabasePassword(parsed.supabase.password);
-          alert('Kredensial Supabase berhasil diimpor!');
+          toast.success('Kredensial Supabase berhasil diimpor!');
         } else {
-          alert('Format JSON tidak valid (harus mengandung objek "supabase").');
+          toast.error('Format JSON tidak valid (harus mengandung objek "supabase").');
         }
       } catch (err: any) {
-        alert('Gagal membaca atau mengurai file JSON: ' + (err.message || err));
+        toast.error('Gagal membaca atau mengurai file JSON: ' + (err.message || err));
       }
     };
     reader.readAsText(file);
@@ -309,7 +310,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
     if (!file) return;
 
     if (!supabaseUrl.trim() || !supabaseAnonKey.trim()) {
-      alert('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
+      toast.error('Mohon isi Supabase URL dan Public Anon Key terlebih dahulu.');
       e.target.value = '';
       return;
     }
@@ -319,7 +320,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
       try {
         const parsed = JSON.parse(event.target?.result as string);
         if (!parsed.mutations || !Array.isArray(parsed.mutations)) {
-          alert('Format JSON tidak valid atau tidak memiliki data mutasi.');
+          toast.error('Format JSON tidak valid atau tidak memiliki data mutasi.');
           return;
         }
 
@@ -328,7 +329,7 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
         const supabase = getSupabaseClient();
         
         if (!supabase) {
-          alert('Gagal membuat client Supabase, cek URL dan Key Anda.');
+          toast.error('Gagal membuat client Supabase, cek URL dan Key Anda.');
           return;
         }
 
@@ -353,9 +354,9 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
         }
         
         setSyncResult({ successCount, failedCount });
-        alert(`Berhasil mengimpor ${successCount} data ke Supabase.`);
+        toast.success(`Berhasil mengimpor ${successCount} data ke Supabase.`);
       } catch (err: any) {
-        alert('Gagal mengurai atau mengimpor file JSON: ' + (err.message || err));
+        toast.error('Gagal mengurai atau mengimpor file JSON: ' + (err.message || err));
       } finally {
         setSyncLoading(false);
       }
@@ -385,9 +386,9 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
         if (parsed.supabaseEmail !== undefined) setSupabaseEmail(parsed.supabaseEmail);
         if (parsed.supabasePassword !== undefined) setSupabasePassword(parsed.supabasePassword);
 
-        alert('Pengaturan berhasil dimuat dari file JSON! Silakan klik tombol "Simpan Pengaturan" di bagian bawah untuk menyimpan perubahan secara permanen.');
+        toast.success('Pengaturan berhasil dimuat dari file JSON! Silakan klik tombol "Simpan Pengaturan" di bagian bawah untuk menyimpan perubahan secara permanen.');
       } catch (err) {
-        alert('Gagal mengurai file JSON: ' + err);
+        toast.error('Gagal mengurai file JSON: ' + err);
       }
     };
     reader.readAsText(file);
@@ -834,7 +835,7 @@ create policy "Allow all users to read and write settings"
 on public.token_settings for all
 using (true)
 with check (true);`);
-                    alert('SQL Schema Supabase berhasil disalin!');
+                    toast.success('SQL Schema Supabase berhasil disalin!');
                   }}
                   className="absolute right-2 top-2 px-2 py-1 bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-300 font-semibold rounded-md border border-slate-700 transition-colors flex items-center gap-1 cursor-pointer animate-none"
                 >

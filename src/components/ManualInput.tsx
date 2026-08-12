@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { MutationRecord } from '../types';
 import { Zap, ArrowRight, Save, Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ManualInputProps {
   lastRecord: MutationRecord | null;
@@ -27,7 +28,7 @@ export default function ManualInput({ lastRecord, onSubmit, isLoading }: ManualI
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isNaN(remainingKwh) || remainingKwh < 0) {
-      alert('Mohon masukkan sisa kWh yang valid (minimal 0).');
+      toast.error('Mohon masukkan sisa kWh yang valid (minimal 0).');
       return;
     }
 
