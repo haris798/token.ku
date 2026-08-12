@@ -254,6 +254,56 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
     }
   };
 
+  const handleExportSupabaseCredentials = () => {
+    try {
+      const creds = {
+        supabase: {
+          url: supabaseUrl.trim(),
+          anonKey: supabaseAnonKey.trim(),
+          email: supabaseEmail.trim(),
+          password: supabasePassword.trim()
+        }
+      };
+      const jsonString = JSON.stringify(creds, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", url);
+      downloadAnchor.setAttribute("download", "supabase_credentials.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Gagal mengekspor kredensial Supabase');
+    }
+  };
+
+  const handleImportSupabaseCredentials = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed.supabase) {
+          if (parsed.supabase.url !== undefined) setSupabaseUrl(parsed.supabase.url);
+          if (parsed.supabase.anonKey !== undefined) setSupabaseAnonKey(parsed.supabase.anonKey);
+          if (parsed.supabase.email !== undefined) setSupabaseEmail(parsed.supabase.email);
+          if (parsed.supabase.password !== undefined) setSupabasePassword(parsed.supabase.password);
+          alert('Kredensial Supabase berhasil diimpor!');
+        } else {
+          alert('Format JSON tidak valid (harus mengandung objek "supabase").');
+        }
+      } catch (err: any) {
+        alert('Gagal membaca atau mengurai file JSON: ' + (err.message || err));
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const handleImportSupabaseJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -660,6 +710,28 @@ export default function SettingsPanel({ settings, onSave, onAutoSaveLocal, onSee
                     className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 text-xs outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all font-mono"
                   />
                 </div>
+              </div>
+
+              {/* Kredensial JSON Export/Import */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2">
+                <button
+                  type="button"
+                  onClick={handleExportSupabaseCredentials}
+                  className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Download className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>Ekspor Kredensial JSON</span>
+                </button>
+                <label className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-[11px] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                  <Upload className="h-3.5 w-3.5 text-indigo-500" />
+                  <span>Impor Kredensial JSON</span>
+                  <input 
+                    type="file" 
+                    accept=".json" 
+                    onChange={handleImportSupabaseCredentials} 
+                    className="hidden" 
+                  />
+                </label>
               </div>
 
               {/* Supabase Documentation */}
