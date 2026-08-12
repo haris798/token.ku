@@ -72,6 +72,10 @@ jobs:
         run: |
           if [ -d "android" ]; then
             cd android
+            if ! java -jar gradle/wrapper/gradle-wrapper.jar --version >/dev/null 2>&1; then
+              echo "Gradle wrapper jar is missing or corrupt, regenerating wrapper..."
+              gradle wrapper --gradle-version 8.11.1 --distribution-type bin
+            fi
             chmod +x gradlew
             ./gradlew assembleDebug
           else
