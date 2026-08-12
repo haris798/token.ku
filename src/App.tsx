@@ -77,8 +77,7 @@ export default function App() {
   const [showSupabaseErrorModal, setShowSupabaseErrorModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'prediction' | 'history' | 'settings'>('dashboard');
   const [isSaving, setIsSaving] = useState(false);
-  const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
-
+  
   const isCloudflareProxy = useMemo(() => {
     return window.location.hostname === 'token.haris443.workers.dev' || window.location.hostname.includes('workers.dev');
   }, []);
@@ -86,31 +85,10 @@ export default function App() {
   // ✅ BARU: State & Refs untuk Offline-First & Race Condition Guard
   const isOnline = useOnlineStatus();
   const isLoadingDataRef = useRef(false);
-  const bannerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const prevOnlineRef = useRef(isOnline);
+    const prevOnlineRef = useRef(isOnline);
 
-  // ✅ FIX: showBanner dengan cleanup timeout (cegah memory leak)
-  const showBanner = (type: 'success' | 'error' | 'warning', message: string) => {
-    setBanner({ type, message });
-    
-    if (bannerTimeoutRef.current) {
-      clearTimeout(bannerTimeoutRef.current);
-    }
-    
-    bannerTimeoutRef.current = setTimeout(() => {
-      setBanner(prev => prev?.message === message ? null : prev);
-      bannerTimeoutRef.current = null;
-    }, 6000);
-  };
-
-  // Cleanup banner timeout saat unmount
-  useEffect(() => {
-    return () => {
-      if (bannerTimeoutRef.current) {
-        clearTimeout(bannerTimeoutRef.current);
-      }
-    };
-  }, []);
+  
+  
 
   useEffect(() => {
     const initialize = async () => {
@@ -150,7 +128,7 @@ export default function App() {
     
     if (wasOffline && isNowOnline) {
       console.log('[App] Connection restored, auto-syncing...');
-      showBanner('success', 'Koneksi pulih! Melakukan sinkronisasi data...');
+      toast.success('Koneksi pulih! Melakukan sinkronisasi data...');
       loadAppConfigAndData(false);
     }
     
@@ -221,7 +199,7 @@ export default function App() {
       
       if (!hasInternet || !hasSupabaseConfig) {
         if (!hasInternet && hasSupabaseConfig && !isSilent) {
-          showBanner('warning', 'Mode Offline: Menampilkan data lokal terakhir. Sinkronisasi ditunda.');
+          toast('Mode Offline: Menampilkan data lokal terakhir. Sinkronisasi ditunda.', { icon: '⚠️' });
         }
         return; // Selesai - data lokal sudah di-set
       }
@@ -276,6 +254,11 @@ export default function App() {
         
         if (localMutations.length > 0) {
           await mirrorAllToSupabase(loadedSettings.supabaseUrl, loadedSettings.supabaseAnonKey, localMutations)
+            .then(res => {
+              if (res.successCount > 0 && !isSilent) {
+                toast.success(`${res.successCount} data offline disinkronkan ke Supabase`);
+              }
+            })
             .catch(err => console.warn('[loadAppConfigAndData] Failed to mirror local data:', err));
         }
         
@@ -349,19 +332,19 @@ export default function App() {
       const hasSupabase = !!(settings.supabaseUrl && settings.supabaseAnonKey);
       
       if (hasInternet && hasSupabase) {
-        try {
-          await saveSupabaseMutation(settings.supabaseUrl, settings.supabaseAnonKey, recordToSave);
-          const updated = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
-          setMutations(updated);
-          showBanner('success', 'Pencatatan berhasil disimpan ke Supabase Cloud.');
-        } catch (sbErr) {
-          console.error('[handleAddMutation] Supabase save failed, keeping local:', sbErr);
-          showBanner('warning', 'Gagal sync ke Supabase. Data tersimpan di lokal.');
-        }
-      } else if (!hasInternet) {
-        showBanner('warning', 'Mode Offline: Data tersimpan di lokal. Akan di-sync saat online.');
+        toast.success('Pencatatan berhasil disimpan.');
+        // Background sync
+        mirrorAllToSupabase(settings.supabaseUrl, settings.supabaseAnonKey, updatedLocal)
+          .then(async () => {
+             const updated = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
+             setMutations(updated);
+             localStorage.setItem('tokenpro_mutations', JSON.stringify(updated));
+          })
+          .catch(err => console.warn('Background sync failed:', err));
+      } else if (!hasInternet && hasSupabase) {
+        toast('Mode Offline: Data tersimpan di lokal. Akan otomatis di-sync saat online.', { icon: '🔄' });
       } else {
-        showBanner('success', 'Pencatatan berhasil disimpan di penyimpanan lokal.');
+        toast.success('Pencatatan berhasil disimpan di lokal.');
       }
       
       // ✅ FIX: Telegram alert berdasarkan STATE TERKINI, bukan record input
@@ -384,9 +367,9 @@ export default function App() {
           );
           
           if (telSuccess) {
-            showBanner('warning', 'Peringatan saldo rendah terkirim ke Telegram.');
+            toast('Peringatan saldo rendah terkirim ke Telegram.', { icon: '⚠️' });
           } else {
-            showBanner('error', 'Notifikasi Telegram gagal terkirim.');
+            toast.error('Notifikasi Telegram gagal terkirim.');
           }
         }
       }
@@ -394,7 +377,7 @@ export default function App() {
       setActiveTab('dashboard');
     } catch (err) {
       console.error('[handleAddMutation] Error:', err);
-      showBanner('error', 'Gagal menyimpan pencatatan.');
+      toast.error('Gagal menyimpan pencatatan.');
     } finally {
       setIsSaving(false);
     }
@@ -416,29 +399,27 @@ export default function App() {
       const hasSupabase = !!(settings.supabaseUrl && settings.supabaseAnonKey);
       
       if (hasInternet && hasSupabase && recordToDelete) {
-        try {
-          // ✅ FIX: Delete by ID, bukan timestamp (hindari hapus data lain)
-          await deleteSupabaseMutation(
-            settings.supabaseUrl, 
-            settings.supabaseAnonKey, 
-            recordToDelete.id || recordToDelete.timestamp
-          );
-          
+        toast.success('Pencatatan berhasil dihapus.');
+        // Background sync
+        deleteSupabaseMutation(
+          settings.supabaseUrl, 
+          settings.supabaseAnonKey, 
+          recordToDelete.id || recordToDelete.timestamp
+        ).then(async () => {
           const updated = await loadSupabaseMutations(settings.supabaseUrl, settings.supabaseAnonKey);
           setMutations(updated);
-          showBanner('success', 'Pencatatan berhasil dihapus dari Supabase Cloud.');
-        } catch (sbErr) {
+          localStorage.setItem('tokenpro_mutations', JSON.stringify(updated));
+        }).catch(sbErr => {
           console.error('[handleDeleteMutation] Supabase delete failed:', sbErr);
-          showBanner('warning', 'Gagal hapus dari Supabase. Dihapus dari lokal saja.');
-        }
-      } else if (!hasInternet) {
-        showBanner('warning', 'Mode Offline: Dihapus dari lokal. Akan di-sync saat online.');
+        });
+      } else if (!hasInternet && hasSupabase) {
+        toast('Mode Offline: Dihapus dari lokal. Perubahan akan disinkronkan saat online.', { icon: '🔄' });
       } else {
-        showBanner('success', 'Pencatatan berhasil dihapus dari penyimpanan lokal.');
+        toast.success('Pencatatan berhasil dihapus dari penyimpanan lokal.');
       }
     } catch (err) {
       console.error('[handleDeleteMutation] Error:', err);
-      showBanner('error', 'Gagal menghapus data.');
+      toast.error('Gagal menghapus data.');
     } finally {
       setIsSaving(false);
     }
@@ -502,22 +483,22 @@ export default function App() {
           if ((window as any).__missingTable) {
             (window as any).__missingTable = false;
             setShowSupabaseErrorModal(true);
-            if (!silent) showBanner('warning', `Konfigurasi disimpan secara lokal!`);
+            if (!silent) toast(`Konfigurasi disimpan secara lokal!`, { icon: '⚠️' });
           } else {
-            if (!silent) showBanner('success', `${supabaseSettingsDetails} & sync data Supabase${syncDetails}.`);
+            if (!silent) toast.success(`${supabaseSettingsDetails} & sync data Supabase${syncDetails}.`);
           }
         } catch (err) {
           console.error('Failed to load from new Supabase config, using local instead:', err);
           setMutations(localMutations);
-          if (!silent) showBanner('warning', 'Konfigurasi disimpan secara lokal. Supabase baru tidak dapat dihubungi.');
+          if (!silent) toast('Konfigurasi disimpan secara lokal. Supabase baru tidak dapat dihubungi.', { icon: '⚠️' });
         }
       } else {
         setMutations(localMutations);
-        if (!silent) showBanner('success', 'Konfigurasi berhasil disimpan secara lokal.');
+        if (!silent) toast.success('Konfigurasi berhasil disimpan secara lokal.');
       }
     } catch (err) {
       console.error('Error saving settings:', err);
-      if (!silent) showBanner('error', 'Gagal menyimpan konfigurasi.');
+      if (!silent) toast.error('Gagal menyimpan konfigurasi.');
     } finally {
       setIsSaving(false);
     }
@@ -556,13 +537,13 @@ export default function App() {
       
       const totalRemoved = (localMutations.length - uniqueLocal.length) + sbCleaned;
       if (totalRemoved > 0) {
-        showBanner('success', `Berhasil membersihkan ${totalRemoved} data duplikat!`);
+        toast.success(`Berhasil membersihkan ${totalRemoved} data duplikat!`);
       } else {
-        showBanner('success', 'Semua data sudah bersih dari duplikat.');
+        toast.success('Semua data sudah bersih dari duplikat.');
       }
     } catch (err) {
       console.error('Error cleaning duplicates:', err);
-      showBanner('error', 'Gagal membersihkan data duplikat.');
+      toast.error('Gagal membersihkan data duplikat.');
     } finally {
       setIsSaving(false);
     }
@@ -574,10 +555,10 @@ export default function App() {
       const seeded = seedLocalData();
       setSettings(seeded.settings);
       setMutations(seeded.mutations);
-      showBanner('success', 'Data log dan pengaturan contoh berhasil diimpor ke penyimpanan lokal!');
+      toast.success('Data log dan pengaturan contoh berhasil diimpor ke penyimpanan lokal!');
     } catch (err) {
       console.error('Error seeding data:', err);
-      showBanner('error', 'Gagal mengimpor data contoh.');
+      toast.error('Gagal mengimpor data contoh.');
     } finally {
       setIsSaving(false);
     }
@@ -601,31 +582,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-colors duration-300 overflow-x-hidden w-full relative">
       <Toaster position="top-center" />
-      <AnimatePresence>
-        {banner && (
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4"
-          >
-            <div className={`p-4 rounded-xl shadow-lg border flex items-start gap-3 ${
-              banner.type === 'success' 
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900 text-emerald-800 dark:text-emerald-200' 
-                : banner.type === 'warning'
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900 text-amber-800 dark:text-amber-200'
-                  : 'bg-rose-50 dark:bg-rose-950/40 border-rose-100 dark:border-rose-900 text-rose-800 dark:text-rose-200'
-            }`}>
-              {banner.type === 'success' && <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />}
-              {banner.type === 'warning' && <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />}
-              {banner.type === 'error' && <AlertOctagon className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />}
-              <div className="text-xs font-semibold leading-relaxed">
-                {banner.message}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      
       
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 sticky top-0 z-40 py-3.5 px-4 sm:px-6 transition-colors duration-300">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3.5">
