@@ -1,0 +1,8 @@
+{
+	"appId": "com.tokenku.app",
+	"appName": "Token.ku",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
