@@ -1,46 +1,37 @@
-# Token.ku
+# ⚡ Token.ku
 
-Token.ku adalah aplikasi web inovatif bergaya modern untuk melacak, mengelola, dan memprediksi konsumsi token listrik (kWh) rumah atau properti Anda. Aplikasi ini dibangun dengan arsitektur **Offline-First**, memastikan Anda dapat mencatat dan melihat sisa saldo bahkan tanpa koneksi internet, sambil tetap menjaga data tersinkronisasi di cloud saat Anda kembali online.
+**Token.ku** adalah aplikasi *Progressive Web App* (PWA) cerdas untuk mencatat, memantau, dan menganalisis saldo kWh meter listrik prabayar Anda. Didesain dengan arsitektur *Offline-First*, aplikasi ini menjamin kecepatan interaksi tanpa hambatan serta keamanan pencadangan data ke Cloud.
 
-## Fitur Utama
+## ✨ Fitur Utama
 
-- **Dashboard & Analitik Interaktif**: Pantau sisa saldo kWh, rata-rata konsumsi harian, serta ringkasan pengeluaran bulanan.
-- **Prediksi Cerdas**: Dapatkan estimasi (proyeksi) tanggal kapan saldo token listrik Anda diperkirakan akan habis berdasarkan tren pemakaian rata-rata 30 hari terakhir.
-- **Offline-First & Sinkronisasi Supabase**: Bekerja mulus secara lokal (menggunakan LocalStorage / Room Database). Saat koneksi tersedia, sinkronkan log dan pengaturan Anda ke database cloud Supabase dengan aman.
-- **Notifikasi Telegram**: Terima peringatan otomatis ke Telegram Anda ketika sisa kWh menyentuh ambang batas kritis (Low Threshold).
-- **Ekspor & Cadangan Data**: Unduh laporan pemakaian per bulan ke format CSV, atau ekspor seluruh konfigurasi aplikasi Anda dalam format JSON.
-- **Personalisasi Tema**: Dukungan penuh untuk mode Terang (Light) dan mode Gelap (Dark).
-- **Desain Modern**: Antarmuka responsif, rapi, dan cepat dengan animasi menggunakan Tailwind CSS dan Framer Motion.
+- 📡 **Offline-First & Auto-Sync**: Catat sisa meteran kapan saja meski tanpa koneksi internet. Data akan tersimpan di lokal dan disinkronkan otomatis ke Supabase di latar belakang saat internet kembali aktif.
+- 📊 **Dashboard Analitik**: Pantau riwayat pemakaian listrik dan histori pengisian token Anda melalui grafik interaktif yang indah.
+- 🚨 **Notifikasi Telegram**: Jangan pernah kehabisan listrik di tengah malam! Dapatkan peringatan otomatis via Telegram ketika sisa saldo kWh menyentuh batas kritis (dapat dikonfigurasi).
+- 💾 **Ekspor & Impor JSON**: Pegang kendali penuh atas data Anda. Ekspor log pemakaian, pengaturan aplikasi, hingga kredensial database ke dalam file JSON, dan impor kapan saja.
+- 📱 **PWA (Progressive Web App)**: Instal aplikasi langsung ke *Home Screen* Android, iOS, atau Desktop Anda untuk pengalaman aplikasi *native*.
 
-## Tumpukan Teknologi (Tech Stack)
+## 🛠️ Teknologi yang Digunakan
 
-- **Frontend**: React (Vite) + TypeScript
-- **Styling**: Tailwind CSS, Lucide Icons
+- **Frontend**: React (Vite), TypeScript, Tailwind CSS, Framer Motion
 - **Visualisasi Data**: Recharts
-- **Animasi**: Framer Motion
-- **Database Lokal**: LocalStorage & integrasi Room Database 
-- **Database Cloud**: Supabase (REST API)
-- **Notifikasi**: Telegram Bot API
+- **Database & Cloud Sync**: Supabase (PostgreSQL), Local Storage
+- **Notifikasi**: React Hot Toast, Telegram Bot API
 
-## Cara Penggunaan
+## 🚀 Panduan Setup (Cloud & Notifikasi)
 
-1. Buka halaman pengaturan (Settings) dan atur tarif listrik per kWh (default: Rp 1444.70).
-2. Tentukan ambang batas minimum (Low Threshold) kapan aplikasi harus memberikan status *Warning/Critical*.
-3. (Opsional) Masukkan kredensial Supabase URL dan Anon Key untuk mengaktifkan sinkronisasi cloud.
-4. (Opsional) Masukkan Telegram Bot Token dan Chat ID untuk menyalakan fitur peringatan otomatis.
-5. Masukkan catatan (Input) setiap kali meteran berkurang atau ketika Anda melakukan pengisian ulang (Top-Up).
-6. Lihat analisis lengkap dan prediksi sisa hari dari layar utama (Dashboard).
+Agar fitur Cloud Backup dan Notifikasi berjalan maksimal, lakukan pengaturan berikut di dalam tab **Settings** pada aplikasi:
 
-## Menjalankan Aplikasi secara Lokal
+### 1. Setup Supabase (Cloud Sync)
+1. Buat proyek baru di [Supabase](https://supabase.com/).
+2. Masuk ke **SQL Editor** dan jalankan *script* skema pembuatan tabel yang tersedia di dalam menu pengaturan aplikasi Token.ku (Bagian *Supabase Documentation*).
+3. Salin **Project URL** dan **anon public key** dari Supabase ke dalam pengaturan aplikasi Token.ku.
 
-Pastikan Anda memiliki Node.js terinstal, kemudian jalankan perintah berikut:
+### 2. Setup Telegram Bot (Alert)
+1. Buka Telegram dan cari **@BotFather**.
+2. Buat bot baru menggunakan perintah `/newbot` dan simpan **Bot Token** yang diberikan.
+3. Kirim pesan `/start` ke bot yang baru Anda buat.
+4. Gunakan bot seperti **@userinfobot** untuk mendapatkan **Chat ID** Anda.
+5. Masukkan Bot Token dan Chat ID tersebut ke dalam pengaturan aplikasi Token.ku.
 
-```bash
-# Install seluruh dependensi
-npm install
-
-# Jalankan development server
-npm run dev
-```
-
-Aplikasi ini siap digunakan dan diakses melalui browser Anda!
+## 📦 Keunggulan Arsitektur Data
+Aplikasi ini dilengkapi algoritma **De-duplikasi Pintar** yang memastikan tidak ada data ganda (berdasarkan *timestamp* dan *sisa kWh*) yang terkirim ke Supabase ketika Anda melakukan sinkronisasi *offline-to-online* secara berulang.
